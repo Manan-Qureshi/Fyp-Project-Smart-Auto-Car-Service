@@ -2,11 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-// ============================================================
-// PUBLIC ROUTES
-// ============================================================
-
-// Homepage — location-based provider discovery
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('welcome');
 
 // Provider public profile
@@ -36,9 +31,7 @@ Route::get('auth/google/callback', [App\Http\Controllers\Auth\GoogleController::
 // Public service listing (for browsing — no provider context)
 Route::get('/services', [App\Http\Controllers\ServiceController::class, 'publicServices'])->name('services.index');
 
-// ============================================================
-// AUTHENTICATED ROUTES
-// ============================================================
+
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard (role-based redirect)
@@ -53,9 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment/success', [App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/cancel', [App\Http\Controllers\PaymentController::class, 'cancel'])->name('payment.cancel');
 
-    // -------------------------------------------------------
-    // CUSTOMER ROUTES
-    // -------------------------------------------------------
+
     Route::middleware(['role:user,customer'])->group(function () {
         // Booking flow: view provider → book cart
         Route::get('/providers/{provider}/book-cart', [App\Http\Controllers\BookingController::class, 'create'])->name('bookings.create');
@@ -65,9 +56,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/bookings/{booking}/rate', [App\Http\Controllers\RatingController::class, 'store'])->name('bookings.rate');
     });
 
-    // -------------------------------------------------------
-    // PROVIDER ROUTES
-    // -------------------------------------------------------
+
     Route::middleware(['role:provider'])->prefix('provider')->name('provider.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\ProviderDashboardController::class, 'index'])->name('dashboard');
         Route::post('/bookings/{booking}/assign', [App\Http\Controllers\ProviderDashboardController::class, 'assign'])->name('bookings.assign');
@@ -75,11 +64,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Workers management
         Route::resource('workers', App\Http\Controllers\WorkerController::class)->names([
-            'index'   => 'workers.index',
-            'create'  => 'workers.create',
-            'store'   => 'workers.store',
-            'edit'    => 'workers.edit',
-            'update'  => 'workers.update',
+            'index' => 'workers.index',
+            'create' => 'workers.create',
+            'store' => 'workers.store',
+            'edit' => 'workers.edit',
+            'update' => 'workers.update',
             'destroy' => 'workers.destroy',
         ]);
 
@@ -92,9 +81,6 @@ Route::middleware(['auth'])->group(function () {
     // Worker status updates
     Route::patch('/bookings/{booking}/status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('bookings.status');
 
-    // -------------------------------------------------------
-    // ADMIN ROUTES
-    // -------------------------------------------------------
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
@@ -106,14 +92,14 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/providers/{provider}', [App\Http\Controllers\AdminController::class, 'updateProvider'])->name('providers.update');
         Route::delete('/providers/{provider}', [App\Http\Controllers\AdminController::class, 'destroyProvider'])->name('providers.destroy');
 
-// Global service catalog — explicit names to avoid admin.admin.* double prefix
+        // Global service catalog — explicit names to avoid admin.admin.* double prefix
         Route::resource('services', App\Http\Controllers\ServiceController::class)->names([
-            'index'   => 'admin.services.index',
-            'create'  => 'admin.services.create',
-            'store'   => 'admin.services.store',
-            'show'    => 'admin.services.show',
-            'edit'    => 'admin.services.edit',
-            'update'  => 'admin.services.update',
+            'index' => 'admin.services.index',
+            'create' => 'admin.services.create',
+            'store' => 'admin.services.store',
+            'show' => 'admin.services.show',
+            'edit' => 'admin.services.edit',
+            'update' => 'admin.services.update',
             'destroy' => 'admin.services.destroy',
         ]);
 
@@ -137,6 +123,3 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// change: Changing Seeder file admin data (2026-06-29)
-
-// change: Changing Seeder file admin data (2026-06-29)
