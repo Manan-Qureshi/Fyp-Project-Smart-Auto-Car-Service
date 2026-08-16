@@ -121,8 +121,19 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
+        // Block deletion if there are any active (non-completed, non-cancelled) bookings
+        $activeBookings = $service->bookings()
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if ($activeBookings) {
+            return redirect('/admin/services')
+                ->with('swal_error', 'A booked service can not be delete.');
+        }
+
+        // Safe to delete — all bookings are completed or cancelled (or none at all)
         $service->delete();
-        return redirect('/admin/services')->with('success', 'Service deleted.');
+        return redirect('/admin/services')->with('swal_success', 'Service deleted successfully.');
     }
 
     // -------------------------------------------------------

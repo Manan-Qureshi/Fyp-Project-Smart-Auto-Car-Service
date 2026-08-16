@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CarType;
 use App\Models\CarModel;
+use App\Models\Booking;
 
 class AdminCarController extends Controller
 {
@@ -22,13 +23,24 @@ class AdminCarController extends Controller
 
         CarType::create($request->all());
 
-        return back()->with('success', 'Car Company Added Successfully');
+        return back()->with('swal_success', 'Car Company Added Successfully');
     }
 
     public function destroyType(CarType $type)
     {
+        // Check if any active (non-completed, non-cancelled) bookings exist for any model of this company
+        $hasActiveBookings = Booking::whereIn('car_model_id', $type->models()->pluck('id'))
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return back()->with('swal_error', 'A booked car company can not be delete.');
+        }
+
+        $type->models()->delete();
         $type->delete();
-        return back()->with('success', 'Car Company Deleted Successfully');
+
+        return back()->with('swal_success', 'Car Company Deleted Successfully');
     }
 
     public function storeModel(Request $request)
@@ -41,12 +53,22 @@ class AdminCarController extends Controller
 
         CarModel::create($request->all());
 
-        return back()->with('success', 'Car Model Added Successfully');
+        return back()->with('swal_success', 'Car Model Added Successfully');
     }
 
     public function destroyModel(CarModel $model)
     {
+        // Check if any active (non-completed, non-cancelled) bookings exist for this model
+        $hasActiveBookings = Booking::where('car_model_id', $model->id)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return back()->with('swal_error', 'A booked car model can not be delete.');
+        }
+
         $model->delete();
-        return back()->with('success', 'Car Model Deleted Successfully');
+
+        return back()->with('swal_success', 'Car Model Deleted Successfully');
     }
 }

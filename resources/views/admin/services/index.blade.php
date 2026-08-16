@@ -4,7 +4,6 @@
     <h3 class="fw-bold mb-4"><i class="fas fa-concierge-bell text-primary me-2"></i>Services</h3>
 
     <div class="row g-4 mb-4">
-
         {{-- ── COLUMN 1: MANAGERS ── --}}
         <div class="col-lg-5 d-flex flex-column gap-4">
             
@@ -318,6 +317,29 @@ document.getElementById('adminCategoryFilter')?.addEventListener('change', funct
         row.style.display = (selected === 'all' || row.dataset.category === selected) ? '' : 'none';
     });
 });
+
+// Flash Message Popup
+@if(session('swal_error') || session('error'))
+Swal.fire({
+    icon: 'error',
+    title: 'Cannot Delete',
+    text: '{{ session('swal_error') ?? session('error') }}',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#dc3545',
+    width: '380px',
+    customClass: { popup: 'rounded-4' }
+});
+@elseif(session('swal_success') || session('success'))
+Swal.fire({
+    icon: 'success',
+    title: 'Done!',
+    text: '{{ session('swal_success') ?? session('success') }}',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#198754',
+    width: '380px',
+    customClass: { popup: 'rounded-4' }
+});
+@endif
 </script>
 @endpush
 @endsection

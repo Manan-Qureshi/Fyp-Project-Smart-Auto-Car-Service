@@ -142,6 +142,7 @@
         </main>
     </div>
 </div>
+<script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
 @stack('scripts')
 </body>
 </html>
