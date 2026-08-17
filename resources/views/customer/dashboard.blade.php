@@ -109,7 +109,7 @@
                         <td class="text-end pe-3">
                             <div class="d-flex gap-2 justify-content-end">
                                 {{-- Cancel --}}
-                                @if(!in_array($booking->status, ['in_progress','completed','cancelled']))
+                                @if(!in_array($booking->status, ['in_progress','completed','cancelled']) && $booking->created_at->diffInMinutes(now()) <= 15)
                                 <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
                                       onsubmit="return confirm('Cancel this booking?')">
                                     @csrf @method('DELETE')
