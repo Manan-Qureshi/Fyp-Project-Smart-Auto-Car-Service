@@ -182,7 +182,9 @@ class ServiceController extends Controller
             auth()->user()->update(['car_model_id' => $carModel->id]);
         }
 
-        return redirect()->back()->with('success', 'Car selected: ' . $carModel->name);
+        $cookie = cookie()->forever('selected_car_model_id', $carModel->id);
+
+        return redirect()->back()->with('success', 'Car selected: ' . $carModel->name)->withCookie($cookie);
     }
 
     // -------------------------------------------------------
