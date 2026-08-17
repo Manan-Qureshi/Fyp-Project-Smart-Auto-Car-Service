@@ -16,12 +16,12 @@ class ServiceController extends Controller
     // -------------------------------------------------------
     public function index()
     {
-        $services          = Service::orderBy('name')->get();
-        $editService       = request('edit') ? Service::find(request('edit')) : null;
-        $durations         = TimeDuration::ordered();
-        $editDuration      = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
+        $services = Service::orderBy('name')->get();
+        $editService = request('edit') ? Service::find(request('edit')) : null;
+        $durations = TimeDuration::ordered();
+        $editDuration = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
         $serviceCategories = ServiceCategory::orderBy('name')->get();
-        
+
         return view('admin.services.index', compact('services', 'editService', 'durations', 'editDuration', 'serviceCategories'));
     }
 
@@ -34,14 +34,14 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'             => 'required|string',
-            'category'         => 'nullable|string|max:100',
-            'base_price'       => 'required|numeric|min:0',
+            'name' => 'required|string',
+            'category' => 'nullable|string|max:100',
+            'base_price' => 'required|numeric|min:0',
             'duration_minutes' => 'required|integer|min:1',
-            'description'      => 'nullable|string',
-            'car_type_id'      => 'nullable|exists:car_types,id',
-            'car_model_id'     => 'nullable|exists:car_models,id',
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'description' => 'nullable|string',
+            'car_type_id' => 'nullable|exists:car_types,id',
+            'car_model_id' => 'nullable|exists:car_models,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -59,7 +59,7 @@ class ServiceController extends Controller
     {
         $data = $request->validate([
             'minutes' => 'required|integer|min:5|max:480|unique:time_durations,minutes',
-            'label'   => 'required|string|max:100',
+            'label' => 'required|string|max:100',
         ]);
         TimeDuration::create($data);
         return redirect('/admin/services')->with('success', 'Duration added.');
@@ -98,14 +98,14 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'name'             => 'required|string',
-            'category'         => 'nullable|string|max:100',
-            'base_price'       => 'required|numeric|min:0',
+            'name' => 'required|string',
+            'category' => 'nullable|string|max:100',
+            'base_price' => 'required|numeric|min:0',
             'duration_minutes' => 'required|integer|min:1',
-            'description'      => 'nullable|string',
-            'car_type_id'      => 'nullable|exists:car_types,id',
-            'car_model_id'     => 'nullable|exists:car_models,id',
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'description' => 'nullable|string',
+            'car_type_id' => 'nullable|exists:car_types,id',
+            'car_model_id' => 'nullable|exists:car_models,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -142,7 +142,7 @@ class ServiceController extends Controller
     public function publicServices(Request $request)
     {
         $selectedCar = session('selected_car_model');
-        $query       = Service::query();
+        $query = Service::query();
 
         if ($selectedCar) {
             $carModel = CarModel::find($selectedCar['id']);
@@ -155,7 +155,7 @@ class ServiceController extends Controller
             }
         }
 
-        $services    = $query->orderBy('name')->get();
+        $services = $query->orderBy('name')->get();
         $allCarTypes = CarType::with('models')->get();
 
         return view('services.index', compact('services', 'allCarTypes', 'selectedCar'));
@@ -171,9 +171,9 @@ class ServiceController extends Controller
         $carModel = CarModel::with('carType')->find($request->car_model_id);
         session([
             'selected_car_model' => [
-                'id'             => $carModel->id,
-                'name'           => $carModel->name,
-                'type_name'      => optional($carModel->carType)->name ?? 'Car',
+                'id' => $carModel->id,
+                'name' => $carModel->name,
+                'type_name' => optional($carModel->carType)->name ?? 'Car',
                 'price_modifier' => $carModel->price_modifier,
             ]
         ]);
@@ -201,17 +201,17 @@ class ServiceController extends Controller
     public function calculatePrice(Request $request)
     {
         $request->validate([
-            'service_id'   => 'required|exists:services,id',
+            'service_id' => 'required|exists:services,id',
             'car_model_id' => 'required|exists:car_models,id',
         ]);
 
-        $service    = Service::find($request->service_id);
-        $carModel   = CarModel::find($request->car_model_id);
+        $service = Service::find($request->service_id);
+        $carModel = CarModel::find($request->car_model_id);
         $finalPrice = round($service->base_price * $carModel->price_modifier, 2);
 
         return response()->json([
-            'base_price'  => $service->base_price,
-            'modifier'    => $carModel->price_modifier,
+            'base_price' => $service->base_price,
+            'modifier' => $carModel->price_modifier,
             'final_price' => $finalPrice,
         ]);
     }
