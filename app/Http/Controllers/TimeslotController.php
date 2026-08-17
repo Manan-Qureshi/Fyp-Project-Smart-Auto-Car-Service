@@ -39,7 +39,7 @@ class TimeslotController extends Controller
         $slots   = [];
         $current = Carbon::parse($date . ' ' . $openTime);
         $close   = Carbon::parse($date . ' ' . $closeTime);
-        $now     = Carbon::now();
+        $now     = Carbon::now()->addMinutes(30);
 
         while ($current->copy()->addMinutes($duration)->lte($close)) {
             // Skip past slots for today
