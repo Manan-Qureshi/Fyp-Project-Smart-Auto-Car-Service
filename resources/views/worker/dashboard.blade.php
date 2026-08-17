@@ -70,8 +70,7 @@
                     <form action="{{ route('bookings.status', $b) }}" method="POST">
                         @csrf @method('PATCH')
                         <button type="submit" name="status" value="completed"
-                                class="btn btn-sm btn-success rounded-pill w-100"
-                                onclick="return confirm('Mark this job as completed?')">
+                                class="btn btn-sm btn-success rounded-pill w-100">
                             <i class="fas fa-check me-1"></i> Mark Complete
                         </button>
                     </form>

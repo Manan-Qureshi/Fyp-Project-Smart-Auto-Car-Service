@@ -24,7 +24,7 @@
                 <td><span class="badge {{ $p->is_active ? 'bg-success' : 'bg-secondary' }} rounded-pill">{{ $p->is_active ? 'Active' : 'Inactive' }}</span></td>
                 <td>
                     <a href="{{ route('admin.providers.edit', $p) }}" class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>
-                    <form action="{{ route('admin.providers.destroy', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove?')">
+                    <form action="{{ route('admin.providers.destroy', $p) }}" method="POST" class="d-inline">
                         @csrf @method('DELETE') <button class="btn btn-sm btn-outline-danger rounded-pill">Remove</button>
                     </form>
                 </td>

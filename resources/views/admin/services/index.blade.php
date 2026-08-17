@@ -44,7 +44,7 @@
                             {{ $dur->label }}
                         </span>
                         <form method="POST" action="/admin/durations/{{ $dur->id }}"
-                              onsubmit="return confirm('Remove {{ $dur->label }}?')" class="ms-2 mb-0 d-flex align-items-center">
+                              class="ms-2 mb-0 d-flex align-items-center">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center border-0" style="width: 16px; height: 16px; font-size:.6rem">
                                 <i class="fas fa-times"></i>
@@ -88,7 +88,7 @@
                             {{ $cat->name }}
                         </span>
                         <form method="POST" action="/admin/categories/{{ $cat->id }}"
-                              onsubmit="return confirm('Remove {{ $cat->name }}?')" class="ms-2 mb-0 d-flex align-items-center">
+                              class="ms-2 mb-0 d-flex align-items-center">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center border-0" style="width: 16px; height: 16px; font-size:.6rem">
                                 <i class="fas fa-times"></i>
@@ -273,8 +273,7 @@
                                        class="btn btn-sm btn-outline-warning rounded-pill">
                                         <i class="fas fa-pen"></i>
                                     </a>
-                                    <form action="/admin/services/{{ $service->id }}" method="POST"
-                                          onsubmit="return confirm('Delete \'{{ $service->name }}\'?')">
+                                    <form action="/admin/services/{{ $service->id }}" method="POST">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger rounded-pill">
                                             <i class="fas fa-trash"></i>
@@ -326,16 +325,6 @@ Swal.fire({
     text: '{{ session('swal_error') ?? session('error') }}',
     confirmButtonText: 'OK',
     confirmButtonColor: '#dc3545',
-    width: '380px',
-    customClass: { popup: 'rounded-4' }
-});
-@elseif(session('swal_success') || session('success'))
-Swal.fire({
-    icon: 'success',
-    title: 'Done!',
-    text: '{{ session('swal_success') ?? session('success') }}',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#198754',
     width: '380px',
     customClass: { popup: 'rounded-4' }
 });

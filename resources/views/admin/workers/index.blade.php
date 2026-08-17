@@ -35,7 +35,7 @@
                         <a href="{{ route('admin.workers.edit', $worker) }}" class="btn btn-sm btn-outline-primary me-2">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form action="{{ route('admin.workers.destroy', $worker) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                        <form action="{{ route('admin.workers.destroy', $worker) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger">

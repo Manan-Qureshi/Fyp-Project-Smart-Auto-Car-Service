@@ -110,8 +110,7 @@
                             <div class="d-flex gap-2 justify-content-end">
                                 {{-- Cancel --}}
                                 @if(!in_array($booking->status, ['in_progress','completed','cancelled']) && $booking->created_at->diffInMinutes(now()) <= 15)
-                                <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
-                                      onsubmit="return confirm('Cancel this booking?')">
+                                <form action="{{ route('bookings.cancel', $booking) }}" method="POST">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
                                         <i class="fas fa-times me-1"></i>Cancel

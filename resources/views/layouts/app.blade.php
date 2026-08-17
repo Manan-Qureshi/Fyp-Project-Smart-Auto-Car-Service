@@ -124,10 +124,9 @@
             <div class="container-fluid px-4">
                 @foreach(['success','error','status','info','warning'] as $type)
                     @if(session($type))
-                        <div class="alert alert-{{ $type === 'error' ? 'danger' : ($type === 'status' ? 'info' : $type) }} alert-dismissible fade show shadow-sm border-0">
+                        <div class="auto-alert alert alert-{{ $type === 'error' ? 'danger' : ($type === 'status' ? 'info' : $type) }} fade show shadow-sm border-0">
                             <i class="fas fa-{{ $type === 'success' ? 'check-circle' : ($type === 'error' ? 'exclamation-circle' : 'info-circle') }} me-2"></i>
                             {{ session($type) }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
                 @endforeach
@@ -144,5 +143,18 @@
 </div>
 <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
 @stack('scripts')
+<script>
+    // Auto-dismiss session flash alerts after 1 second
+    document.addEventListener('DOMContentLoaded', function () {
+        var alerts = document.querySelectorAll('.auto-alert');
+        alerts.forEach(function (alert) {
+            setTimeout(function () {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(function () { alert.remove(); }, 500);
+            }, 1000);
+        });
+    });
+</script>
 </body>
 </html>

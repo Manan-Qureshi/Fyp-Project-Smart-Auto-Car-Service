@@ -69,7 +69,7 @@
                     <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('admin.providers.edit', $p) }}" class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>
-                            <form action="{{ route('admin.providers.destroy', $p) }}" method="POST" onsubmit="return confirm('Remove provider?')">
+                            <form action="{{ route('admin.providers.destroy', $p) }}" method="POST">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger rounded-pill">Remove</button>
                             </form>

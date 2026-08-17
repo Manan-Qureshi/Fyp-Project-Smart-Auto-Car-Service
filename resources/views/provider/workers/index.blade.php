@@ -39,7 +39,7 @@
                 </span>
                 <div class="mt-2 d-flex gap-2 justify-content-center">
                     <a href="{{ route('provider.workers.edit', $w) }}" class="btn btn-sm btn-outline-secondary rounded-pill">Edit</a>
-                    <form action="{{ route('provider.workers.destroy', $w) }}" method="POST" onsubmit="return confirm('Remove worker?')">
+                    <form action="{{ route('provider.workers.destroy', $w) }}" method="POST">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger rounded-pill">Remove</button>
                     </form>

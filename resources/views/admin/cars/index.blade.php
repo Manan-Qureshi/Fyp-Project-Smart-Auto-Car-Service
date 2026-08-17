@@ -62,8 +62,7 @@
                         <h5 class="m-0 text-primary fw-bold">
                             {{ $type->name }}
                         </h5>
-                        <form action="{{ route('admin.cars.destroyType', $type) }}" method="POST"
-                            onsubmit="return confirm('Delete this company and all its models?');">
+                        <form action="{{ route('admin.cars.destroyType', $type) }}" method="POST">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger">Delete Company</button>
                         </form>
@@ -76,8 +75,7 @@
                                     {{ $model->name }}
                                     <small class="text-muted d-block" style="font-size: 0.7rem;">x{{ $model->price_modifier }}</small>
                                 </div>
-                                <form action="{{ route('admin.cars.destroyModel', $model) }}" method="POST" class="ms-2"
-                                    onsubmit="return confirm('Delete model?');">
+                                <form action="{{ route('admin.cars.destroyModel', $model) }}" method="POST" class="ms-2">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-link p-0 text-danger" style="font-size: 0.8rem;"><i
                                             class="fas fa-times"></i></button>
@@ -103,16 +101,6 @@ Swal.fire({
     text: '{{ session('swal_error') ?? session('error') }}',
     confirmButtonText: 'OK',
     confirmButtonColor: '#dc3545',
-    width: '380px',
-    customClass: { popup: 'rounded-4' }
-});
-@elseif(session('swal_success') || session('success'))
-Swal.fire({
-    icon: 'success',
-    title: 'Done!',
-    text: '{{ session('swal_success') ?? session('success') }}',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#198754',
     width: '380px',
     customClass: { popup: 'rounded-4' }
 });
