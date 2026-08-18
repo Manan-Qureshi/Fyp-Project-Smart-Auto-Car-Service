@@ -132,6 +132,14 @@ class WorkerController extends Controller
         $provider = $this->getProvider();
         abort_unless($worker->service_provider_id === $provider->id, 403);
 
+        $hasActiveBookings = \App\Models\Booking::where('provider_worker_id', $worker->id)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return back()->with('error', 'An assigned worker cannot be deleted.');
+        }
+
         // Delete the linked user account so they can no longer log in
         if ($worker->user_id) {
             User::where('id', $worker->user_id)->delete();

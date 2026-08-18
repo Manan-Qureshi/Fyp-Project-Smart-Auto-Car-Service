@@ -23,7 +23,7 @@ class AdminCarController extends Controller
 
         CarType::create($request->all());
 
-        return back()->with('swal_success', 'Car Company Added Successfully');
+        return back()->with('success', 'Car Company Added Successfully');
     }
 
     public function destroyType(CarType $type)
@@ -34,13 +34,13 @@ class AdminCarController extends Controller
             ->exists();
 
         if ($hasActiveBookings) {
-            return back()->with('swal_error', 'A booked car company can not be delete.');
+            return back()->with('error', 'A booked car company cannot be deleted.');
         }
 
         $type->models()->delete();
         $type->delete();
 
-        return back()->with('swal_success', 'Car Company Deleted Successfully');
+        return back()->with('success', 'Car Company Deleted Successfully');
     }
 
     public function storeModel(Request $request)
@@ -53,7 +53,7 @@ class AdminCarController extends Controller
 
         CarModel::create($request->all());
 
-        return back()->with('swal_success', 'Car Model Added Successfully');
+        return back()->with('success', 'Car Model Added Successfully');
     }
 
     public function destroyModel(CarModel $model)
@@ -64,11 +64,11 @@ class AdminCarController extends Controller
             ->exists();
 
         if ($hasActiveBookings) {
-            return back()->with('swal_error', 'A booked car model can not be delete.');
+            return back()->with('error', 'A booked car model cannot be deleted.');
         }
 
         $model->delete();
 
-        return back()->with('swal_success', 'Car Model Deleted Successfully');
+        return back()->with('success', 'Car Model Deleted Successfully');
     }
 }

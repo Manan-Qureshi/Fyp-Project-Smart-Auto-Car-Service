@@ -73,6 +73,9 @@
                             @foreach($psList as $ps)
                                 @php
                                     $service = $ps->service;
+                                @endphp
+                                @if(!$service) @continue @endif
+                                @php
                                     $modifier = $carModel ? $carModel->price_modifier : 1;
                                     $price = round($service->base_price * $modifier, 2);
                                 @endphp

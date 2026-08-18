@@ -117,6 +117,14 @@ class AdminController extends Controller
 
     public function destroyProvider(ServiceProvider $provider)
     {
+        $hasActiveBookings = \App\Models\Booking::where('service_provider_id', $provider->id)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return back()->with('error', 'A service provider with active bookings cannot be deleted.');
+        }
+
         $provider->delete();
         return redirect()->route('admin.providers.index')->with('success', 'Provider removed.');
     }

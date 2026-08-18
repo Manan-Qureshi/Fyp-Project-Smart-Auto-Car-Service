@@ -127,13 +127,12 @@ class ServiceController extends Controller
             ->exists();
 
         if ($activeBookings) {
-            return redirect('/admin/services')
-                ->with('swal_error', 'A booked service can not be delete.');
+            return back()->with('error', 'A booked service cannot be deleted.');
         }
 
         // Safe to delete — all bookings are completed or cancelled (or none at all)
         $service->delete();
-        return redirect('/admin/services')->with('swal_success', 'Service deleted successfully.');
+        return back()->with('success', 'Service deleted successfully.');
     }
 
     // -------------------------------------------------------
