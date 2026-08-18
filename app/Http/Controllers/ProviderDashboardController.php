@@ -42,6 +42,10 @@ class ProviderDashboardController extends Controller
             'completed' => $bookings->where('status', 'completed')->count(),
         ];
 
+        if (request()->ajax()) {
+            return response()->json(['html' => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render()]);
+        }
+
         return view('provider.dashboard', compact('provider', 'bookings', 'workers', 'stats'));
     }
 

@@ -63,6 +63,10 @@ class DashboardController extends Controller
                 : $baseQuery->limit(10)->get();
         }
 
+        if (request()->ajax()) {
+            return response()->json(['html' => view('admin.partials.bookings_table_body', compact('bookings'))->render()]);
+        }
+
         return view('admin.dashboard', compact(
             'providers', 'bookings', 'totalRevenue', 'totalEarning',
             'totalBookings', 'filterDate', 'filterProvider', 'filtered', 'bookingTotal', 'showAll'
@@ -93,6 +97,10 @@ class DashboardController extends Controller
         // The FIRST booking that is not yet completed is the only one the worker can act on
         $firstActionable = $assignedBookings->first(fn($b) => in_array($b->status, ['assigned', 'in_progress']));
 
+        if (request()->ajax()) {
+            return response()->json(['html' => view('worker.partials.bookings_table_body', compact('assignedBookings', 'firstActionableId'))->render()]);
+        }
+
         return view('worker.dashboard', [
             'assignedBookings'   => $assignedBookings,
             'firstActionableId'  => $firstActionable?->id,
@@ -111,6 +119,10 @@ class DashboardController extends Controller
             ->whereNotNull('service_provider_id')
             ->first()
             ?->serviceProvider;
+
+        if (request()->ajax()) {
+            return response()->json(['html' => view('customer.partials.bookings_table_body', compact('bookings'))->render()]);
+        }
 
         return view('customer.dashboard', compact('bookings', 'lastProvider'));
     }
