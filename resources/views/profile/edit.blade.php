@@ -7,11 +7,7 @@
             <div class="glass-card p-4 bg-white">
                 <h4 class="mb-4 text-primary fw-bold">My Profile</h4>
 
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
+
 
                 @if(!$user->phone_number || !$user->address)
                     <div class="alert alert-warning">

@@ -7,18 +7,7 @@
         <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ $provider->business_name }}</span>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+
 
     {{-- Stats --}}
     <div class="row g-3 mb-4">

@@ -144,15 +144,18 @@
 <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
 @stack('scripts')
 <script>
-    // Auto-dismiss session flash alerts after 1 second
+    // Auto-dismiss session flash alerts after 4 seconds
     document.addEventListener('DOMContentLoaded', function () {
         var alerts = document.querySelectorAll('.auto-alert');
-        alerts.forEach(function (alert) {
+        if (alerts.length === 0) return;
+        // Only show the first alert, hide any extras immediately
+        alerts.forEach(function (alert, index) {
+            if (index > 0) { alert.remove(); return; }
             setTimeout(function () {
                 alert.classList.remove('show');
                 alert.classList.add('fade');
                 setTimeout(function () { alert.remove(); }, 500);
-            }, 1000);
+            }, 4000);
         });
     });
 </script>
