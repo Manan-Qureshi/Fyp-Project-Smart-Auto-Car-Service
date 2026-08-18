@@ -40,37 +40,67 @@
         @endif
     </div>
 
-    <div class="row g-3">
-        @foreach($allServices as $service)
-        @php $enabled = in_array($service->id, $enabledIds); @endphp
-        <div class="col-md-6 col-lg-4 service-card-wrapper" data-category="{{ $service->category ? strtolower(trim($service->category)) : 'uncategorized' }}">
-            <div class="glass-card p-3 rounded-4 d-flex align-items-center gap-3 {{ $enabled ? 'border border-success border-2' : '' }}">
-                @if($service->image)
-                    <img src="{{ asset('storage/'.$service->image) }}" class="rounded-3 flex-shrink-0 border" style="width: 55px; height: 55px; object-fit: cover;">
-                @else
-                    <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 55px; height: 55px;">
-                        <i class="fas fa-concierge-bell"></i>
-                    </div>
-                @endif
-                <div class="flex-grow-1">
-                    <div class="fw-bold">{{ $service->name }}</div>
-                    <div class="text-muted small">Base: PKR {{ number_format($service->base_price) }} · {{ $service->duration_minutes }}min</div>
-                    @if($service->category)<div class="badge bg-light text-dark">{{ $service->category }}</div>@endif
-                </div>
-                <div class="d-flex flex-column align-items-end gap-2">
-                    <span class="badge {{ $enabled ? 'bg-success' : 'bg-secondary' }}">
-                        {{ $enabled ? 'Status: Active' : 'Status: Inactive' }}
-                    </span>
-                    <form action="{{ route('provider.services.toggle', $service) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-sm {{ $enabled ? 'btn-outline-danger' : 'btn-outline-success' }} rounded-pill">
-                            {{ $enabled ? 'Disable Service' : 'Enable Service' }}
-                        </button>
-                    </form>
-                </div>
-            </div>
+    <div class="glass-card p-4 rounded-4 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3 border-0">Service</th>
+                        <th class="border-0">Base Price</th>
+                        <th class="border-0">Duration</th>
+                        <th class="border-0">Category</th>
+                        <th class="border-0">Status</th>
+                        <th class="text-end pe-3 border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($allServices as $service)
+                @php $enabled = in_array($service->id, $enabledIds); @endphp
+                <tr class="service-card-wrapper {{ $enabled ? 'table-success opacity-100' : 'opacity-75' }}" data-category="{{ $service->category ? strtolower(trim($service->category)) : 'uncategorized' }}">
+                    <td class="ps-3">
+                        <div class="d-flex align-items-center gap-3">
+                            @if($service->image)
+                                <img src="{{ asset('storage/'.$service->image) }}" class="rounded-3 border" style="width: 45px; height: 45px; object-fit: cover;">
+                            @else
+                                <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width: 45px; height: 45px;">
+                                    <i class="fas fa-concierge-bell"></i>
+                                </div>
+                            @endif
+                            <span class="fw-bold">{{ $service->name }}</span>
+                        </div>
+                    </td>
+                    <td class="fw-semibold text-muted">
+                        PKR {{ number_format($service->base_price) }}
+                    </td>
+                    <td class="text-muted small">
+                        <i class="fas fa-clock me-1"></i>{{ $service->duration_minutes }} min
+                    </td>
+                    <td>
+                        @if($service->category)
+                            <span class="badge bg-light text-dark border">{{ $service->category }}</span>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        <span class="badge {{ $enabled ? 'bg-success' : 'bg-secondary' }} rounded-pill">
+                            {{ $enabled ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
+                    <td class="text-end pe-3">
+                        <form action="{{ route('provider.services.toggle', $service) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm {{ $enabled ? 'btn-outline-danger' : 'btn-outline-success' }} rounded-pill">
+                                <i class="fas {{ $enabled ? 'fa-times' : 'fa-check' }} me-1"></i>
+                                {{ $enabled ? 'Disable Service' : 'Enable Service' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+                </tbody>
+            </table>
         </div>
-        @endforeach
     </div>
 </div>
 @endsection
