@@ -31,9 +31,6 @@
     <div class="glass-card p-4 rounded-4 shadow">
         <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Bookings</h5>
 
-        @if($bookings->isEmpty())
-            <p class="text-muted text-center py-3">No bookings yet.</p>
-        @else
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -53,7 +50,7 @@
                 </tbody>
             </table>
         </div>
-        @endif
+        </div>
     </div>
 </div>
 

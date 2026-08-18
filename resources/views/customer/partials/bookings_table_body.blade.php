@@ -1,3 +1,11 @@
+@if($bookings->isEmpty())
+    <tr>
+        <td colspan="9" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3 opacity-50"></i>
+            <h5 class="text-muted">No bookings yet</h5>
+        </td>
+    </tr>
+@else
 @foreach($bookings as $booking)
 @php
     $statusColor = match($booking->status) {
@@ -67,3 +75,4 @@
     </td>
 </tr>
 @endforeach
+@endif

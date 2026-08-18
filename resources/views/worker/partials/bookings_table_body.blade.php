@@ -1,3 +1,11 @@
+@if($assignedBookings->isEmpty())
+    <tr>
+        <td colspan="7" class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3 opacity-50"></i>
+            <h5 class="text-muted">No bookings assigned to you yet.</h5>
+        </td>
+    </tr>
+@else
 @foreach($assignedBookings as $b)
 @php
     $sc = match($b->status){
@@ -63,3 +71,4 @@
     </td>
 </tr>
 @endforeach
+@endif

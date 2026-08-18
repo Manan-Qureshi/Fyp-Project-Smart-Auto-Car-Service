@@ -22,13 +22,6 @@
         @endif
     </div>
 
-    @if($bookings->isEmpty())
-        <div class="text-center py-5">
-            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
-            <h5 class="text-muted">No bookings yet</h5>
-            <a href="{{ route('welcome') }}" class="btn btn-primary rounded-pill mt-2">Find Providers</a>
-        </div>
-    @else
         <div class="glass-card p-4 rounded-4 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">

@@ -1,3 +1,8 @@
+@if($bookings->isEmpty())
+    <tr>
+        <td colspan="8" class="text-center py-4 text-muted">No bookings yet.</td>
+    </tr>
+@else
 @foreach($bookings as $b)
 @php
     $sc = match($b->status) {
@@ -63,3 +68,4 @@
     </td>
 </tr>
 @endforeach
+@endif

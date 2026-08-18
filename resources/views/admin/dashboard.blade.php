@@ -120,11 +120,6 @@
                 <i class="fas fa-calendar-alt fa-3x mb-3 opacity-25"></i>
                 <p>Select a date or service provider above to view bookings.</p>
             </div>
-        @elseif($bookings->isEmpty())
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
-                <p>No bookings found for the selected filters.</p>
-            </div>
         @else
             <div class="table-responsive">
                 <table class="table table-hover align-middle">

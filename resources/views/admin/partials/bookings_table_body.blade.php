@@ -1,3 +1,11 @@
+@if($bookings->isEmpty())
+    <tr>
+        <td colspan="8" class="text-center py-5 text-muted">
+            <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
+            <p>No bookings found for the selected filters.</p>
+        </td>
+    </tr>
+@else
 @foreach($bookings as $b)
 @php $sc = match($b->status){
     'confirmed'=>'success','payment_pending'=>'warning',
@@ -15,3 +23,4 @@
     <td><span class="badge bg-{{ $sc }} rounded-pill text-capitalize">{{ str_replace('_',' ',$b->status) }}</span></td>
 </tr>
 @endforeach
+@endif
