@@ -34,9 +34,7 @@
                 @if($w->experience_years)
                     <div class="text-muted small"><i class="fas fa-briefcase me-1"></i>{{ $w->experience_years }} yr{{ $w->experience_years != 1 ? 's' : '' }} exp.</div>
                 @endif
-                <span class="badge {{ $w->is_available ? 'bg-success' : 'bg-secondary' }} rounded-pill mt-1">
-                    {{ $w->is_available ? 'Available' : 'Unavailable' }}
-                </span>
+
                 <div class="mt-2 d-flex gap-2 justify-content-center">
                     <a href="{{ route('provider.workers.edit', $w) }}" class="btn btn-sm btn-outline-secondary rounded-pill">Edit</a>
                     <form action="{{ route('provider.workers.destroy', $w) }}" method="POST">

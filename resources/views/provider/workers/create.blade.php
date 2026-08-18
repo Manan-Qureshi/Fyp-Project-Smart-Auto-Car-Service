@@ -78,11 +78,7 @@
                 </div>
             </div>
 
-            {{-- Availability --}}
-            <div class="form-check form-switch mb-4">
-                <input class="form-check-input" type="checkbox" name="is_available" id="availSwitch" checked>
-                <label class="form-check-label fw-semibold" for="availSwitch">Available</label>
-            </div>
+
 
             <div class="d-flex gap-2">
                 <a href="{{ route('provider.workers.index') }}" class="btn btn-outline-secondary rounded-pill flex-grow-1">Cancel</a>

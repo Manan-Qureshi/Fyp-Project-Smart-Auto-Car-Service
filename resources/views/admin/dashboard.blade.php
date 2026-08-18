@@ -56,7 +56,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
-                    <tr><th>Provider</th><th>Owner</th><th>Address</th><th>Bookings</th><th>Status</th><th>Actions</th></tr>
+                    <tr><th>Provider</th><th>Owner</th><th>Address</th><th>Bookings</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                 @foreach($providers->take(5) as $p)
@@ -65,7 +65,7 @@
                     <td>{{ optional($p->owner)->name }}</td>
                     <td class="text-muted small">{{ $p->address }}</td>
                     <td>{{ $p->bookings_count }}</td>
-                    <td><span class="badge {{ $p->is_active ? 'bg-success' : 'bg-secondary' }} rounded-pill">{{ $p->is_active ? 'Active' : 'Inactive' }}</span></td>
+
                     <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('admin.providers.edit', $p) }}" class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>

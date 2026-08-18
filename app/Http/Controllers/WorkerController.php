@@ -42,7 +42,6 @@ class WorkerController extends Controller
             'email'            => 'required|email|max:255|unique:users,email',
             'experience_years' => 'nullable|integer|min:0',
             'password'         => 'required|string|min:6|confirmed',
-            'is_available'     => 'nullable',
         ]);
 
         // 1. Create a User record so the worker can log in via the standard auth
@@ -66,7 +65,7 @@ class WorkerController extends Controller
             'email'            => $data['email'],
             'experience_years' => $data['experience_years'] ?? 0,
             'password'         => bcrypt($data['password']),
-            'is_available'     => $request->boolean('is_available', true),
+            'is_available'     => true,
         ]);
 
         return redirect()->route('provider.workers.index')->with('success', 'Worker added successfully. They can now log in with their email and password.');
@@ -92,7 +91,6 @@ class WorkerController extends Controller
             'email'            => 'required|email|max:255|unique:users,email,' . ($worker->user_id ?? 'NULL'),
             'experience_years' => 'nullable|integer|min:0',
             'password'         => 'nullable|string|min:6|confirmed',
-            'is_available'     => 'nullable',
         ]);
 
         // Update worker row
@@ -103,7 +101,6 @@ class WorkerController extends Controller
             'phone'            => $data['phone'] ?? null,
             'email'            => $data['email'],
             'experience_years' => $data['experience_years'] ?? 0,
-            'is_available'     => $request->boolean('is_available'),
         ];
 
         if (!empty($data['password'])) {

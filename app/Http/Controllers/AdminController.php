@@ -45,7 +45,7 @@ class AdminController extends Controller
             'latitude'          => 'required|numeric|between:-90,90',
             'longitude'         => 'required|numeric|between:-180,180',
             'service_radius_km' => 'nullable|numeric|min:1|max:500',
-            'is_active'         => 'boolean',
+
             'email'             => 'required|email|unique:users,email',
             'name'              => 'required|string',
             'password'          => 'required|string|min:8',
@@ -75,7 +75,7 @@ class AdminController extends Controller
             'longitude'         => $data['longitude'],
             'service_radius_km' => $data['service_radius_km'] ?? 20,
             'logo'              => $data['logo'] ?? null,
-            'is_active'         => $request->boolean('is_active', true),
+            'is_active'         => true,
             'open_time'         => $data['open_time'],
             'close_time'        => $data['close_time'],
         ]);
@@ -98,7 +98,6 @@ class AdminController extends Controller
             'latitude'          => 'required|numeric|between:-90,90',
             'longitude'         => 'required|numeric|between:-180,180',
             'service_radius_km' => 'nullable|numeric|min:1|max:500',
-            'is_active'         => 'nullable',
             'open_time'         => 'required',
             'close_time'        => 'required',
         ]);
@@ -108,7 +107,7 @@ class AdminController extends Controller
         }
 
         $provider->update(array_merge($data, [
-            'is_active'  => $request->boolean('is_active'),
+
             'open_time'  => $data['open_time'],
             'close_time' => $data['close_time'],
         ]));

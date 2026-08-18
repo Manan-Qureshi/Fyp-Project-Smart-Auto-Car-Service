@@ -10,7 +10,7 @@
     <div class="table-responsive glass-card p-4 rounded-4 shadow">
         <table class="table table-hover align-middle">
             <thead class="table-light">
-                <tr><th>Business</th><th>Owner</th><th>Address</th><th>Lat / Lng</th><th>Workers</th><th>Bookings</th><th>Status</th><th>Actions</th></tr>
+                <tr><th>Business</th><th>Owner</th><th>Address</th><th>Lat / Lng</th><th>Workers</th><th>Bookings</th><th>Actions</th></tr>
             </thead>
             <tbody>
             @forelse($providers as $p)
@@ -21,7 +21,7 @@
                 <td class="small text-muted">{{ $p->latitude }}, {{ $p->longitude }}</td>
                 <td>{{ $p->workers_count }}</td>
                 <td>{{ $p->bookings_count }}</td>
-                <td><span class="badge {{ $p->is_active ? 'bg-success' : 'bg-secondary' }} rounded-pill">{{ $p->is_active ? 'Active' : 'Inactive' }}</span></td>
+
                 <td>
                     <a href="{{ route('admin.providers.edit', $p) }}" class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>
                     <form action="{{ route('admin.providers.destroy', $p) }}" method="POST" class="d-inline">

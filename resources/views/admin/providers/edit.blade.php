@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <div class="form-check form-switch mb-4"><input class="form-check-input" type="checkbox" name="is_active" id="activeSwitch" {{ $provider->is_active ? 'checked' : '' }}><label class="form-check-label fw-semibold" for="activeSwitch">Active</label></div>
+
             <div class="d-flex gap-2">
                 <a href="{{ route('admin.providers.index') }}" class="btn btn-outline-secondary rounded-pill flex-grow-1">Cancel</a>
                 <button type="submit" class="btn btn-primary rounded-pill flex-grow-1">Save Changes</button>
