@@ -37,6 +37,8 @@
             <!-- Nav links — always visible on desktop -->
             <div class="d-md-flex align-items-center gap-1 collapse navbar-collapse justify-content-end" id="frontendNav" style="flex: unset;">
                 <a class="nav-link {{ request()->is('/') ? 'active-link' : '' }}" href="{{ url('/') }}">Home</a>
+                <a class="nav-link" href="{{ url('/#providersSection') }}" id="navProvidersLink">Providers</a>
+                <a class="nav-link" href="#smartFooter" id="navContactLink">Contact</a>
 
                 @guest
                     <a class="btn-nav-outline ms-2" href="{{ route('login') }}">Login</a>
@@ -54,7 +56,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="smart-footer">
+    <footer class="smart-footer" id="smartFooter">
         <div class="footer-narrow">
             <div class="row g-4">
                 <!-- Brand Column -->
@@ -118,6 +120,36 @@
     </footer>
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scroll to Contact/Footer
+            const contactBtn = document.getElementById('navContactLink');
+            if (contactBtn) {
+                contactBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const footer = document.getElementById('smartFooter');
+                    if (footer) {
+                        footer.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            }
+
+            // Smooth scroll to Providers Section
+            const providersBtn = document.getElementById('navProvidersLink');
+            if (providersBtn) {
+                providersBtn.addEventListener('click', function(e) {
+                    if (window.location.pathname === '/' || window.location.pathname === '') {
+                        e.preventDefault();
+                        const sec = document.getElementById('providersSection');
+                        if (sec) {
+                            sec.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 
     @yield('scripts')
     @stack('scripts')
