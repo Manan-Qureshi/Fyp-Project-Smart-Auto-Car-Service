@@ -94,16 +94,6 @@
 
 @push('scripts')
 <script>
-@if(session('swal_error') || session('error'))
-Swal.fire({
-    icon: 'error',
-    title: 'Cannot Delete',
-    text: '{{ session('swal_error') ?? session('error') }}',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#dc3545',
-    width: '380px',
-    customClass: { popup: 'rounded-4' }
-});
-@endif
+
 </script>
 @endpush

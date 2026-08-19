@@ -141,7 +141,7 @@
         </main>
     </div>
 </div>
-<script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+
 @stack('scripts')
 <script>
     // Auto-dismiss session flash alerts after 4 seconds
