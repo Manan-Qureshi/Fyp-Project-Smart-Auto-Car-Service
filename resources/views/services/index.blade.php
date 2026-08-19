@@ -311,20 +311,7 @@
                                 this.innerHTML = originalText;
                                 this.disabled = false;
                                 
-                                Swal.fire({
-                                    title: 'Login Required',
-                                    text: 'Please login or register to add services to your cart.',
-                                    icon: 'info',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#0d6efd',
-                                    cancelButtonColor: '#6c757d',
-                                    confirmButtonText: 'Go to Login',
-                                    cancelButtonText: 'Cancel'
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        window.location.href = '{{ route("login") }}';
-                                    }
-                                });
+                                window.location.href = '{{ route("login") }}';
                                 return null;
                             }
                             // Handle opaque redirects (e.g., standard auth middleware returning login page HTML)
@@ -332,20 +319,7 @@
                                 this.innerHTML = originalText;
                                 this.disabled = false;
                                 
-                                Swal.fire({
-                                    title: 'Login Required',
-                                    text: 'Please login or register to add services to your cart.',
-                                    icon: 'info',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#0d6efd',
-                                    cancelButtonColor: '#6c757d',
-                                    confirmButtonText: 'Go to Login',
-                                    cancelButtonText: 'Cancel'
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        window.location.href = response.url;
-                                    }
-                                });
+                                window.location.href = response.url;
                                 return null;
                             }
 
