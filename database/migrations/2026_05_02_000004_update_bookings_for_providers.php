@@ -11,22 +11,26 @@ return new class extends Migration
         Schema::table('bookings', function (Blueprint $table) {
             $table->foreignId('service_provider_id')->nullable()->after('user_id')->constrained()->onDelete('set null');
             // worker_id now references the new workers table (not users)
-            $table->unsignedBigInteger('worker_id_new')->nullable()->after('service_provider_id');
+            $table->unsignedBigInteger('provider_worker_id')->nullable()->after('service_provider_id');
             $table->text('notes')->nullable()->after('appointment_time');
-
-            // Drop old columns
-            $table->dropColumn(['payment_method']);
         });
 
-        // Rename worker_id_new → worker_id_worker (we keep existing worker_id as-is for now)
+        // Drop old columns separately (SQLite requires separate table alteration)
+        if (Schema::hasColumn('bookings', 'payment_method')) {
+            Schema::table('bookings', function (Blueprint $table) {
+                $table->dropColumn(['payment_method']);
+            });
+        }
+
         Schema::table('bookings', function (Blueprint $table) {
-            $table->renameColumn('worker_id_new', 'provider_worker_id');
             $table->foreign('provider_worker_id')->references('id')->on('workers')->onDelete('set null');
         });
 
         // Update status enum to support new statuses
         // MySQL doesn't support modifying enums cleanly, so we use a raw statement
-        \DB::statement("ALTER TABLE bookings MODIFY COLUMN status ENUM('pending','payment_pending','confirmed','accepted','assigned','in_progress','completed','cancelled') DEFAULT 'payment_pending'");
+        if (\DB::getDriverName() !== 'sqlite') {
+            \DB::statement("ALTER TABLE bookings MODIFY COLUMN status ENUM('pending','payment_pending','confirmed','accepted','assigned','in_progress','completed','cancelled') DEFAULT 'payment_pending'");
+        }
     }
 
     public function down(): void

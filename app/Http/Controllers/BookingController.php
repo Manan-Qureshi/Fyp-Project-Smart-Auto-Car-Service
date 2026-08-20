@@ -95,6 +95,33 @@ class BookingController extends Controller
 
         $dateTime  = $request->appointment_date . ' ' . $request->appointment_time;
 
+        // Server-side capacity check
+        $totalWorkers = \App\Models\Worker::where('service_provider_id', $request->service_provider_id)->count();
+        $slotStart = \Carbon\Carbon::parse($dateTime);
+        $slotEnd   = $slotStart->copy()->addMinutes($totalDuration);
+
+        $activeBookings = Booking::where('service_provider_id', $request->service_provider_id)
+            ->whereDate('appointment_time', $request->appointment_date)
+            ->whereIn('status', ['confirmed', 'payment_pending', 'accepted', 'assigned', 'in_progress'])
+            ->get();
+
+        $overlapCount = 0;
+        foreach ($activeBookings as $b) {
+            $bStart = \Carbon\Carbon::parse($b->appointment_time);
+            $bEnd   = $bStart->copy()->addMinutes($b->duration_minutes ?? $totalDuration);
+
+            // Overlap check
+            if ($slotStart->lt($bEnd) && $slotEnd->gt($bStart)) {
+                $overlapCount++;
+            }
+        }
+
+        if ($overlapCount >= $totalWorkers || $totalWorkers === 0) {
+            return back()
+                ->withErrors(['appointment_time' => 'This time slot is fully booked. Please choose another.'])
+                ->withInput();
+        }
+
         $booking = Booking::create([
             'user_id'             => Auth::id(),
             'service_id'          => $primaryService->id,

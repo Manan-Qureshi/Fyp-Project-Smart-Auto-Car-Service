@@ -52,16 +52,23 @@ class TimeslotController extends Controller
             $current->addMinutes($duration);
         }
 
+        $totalWorkers = \App\Models\Worker::where('service_provider_id', $provider->id)->count();
+
+        if ($totalWorkers === 0) {
+            return response()->json([]);
+        }
+
         // Remove slots that conflict with existing confirmed bookings
         $booked = Booking::where('service_provider_id', $provider->id)
             ->whereDate('appointment_time', $date)
             ->whereIn('status', ['confirmed', 'payment_pending', 'accepted', 'assigned', 'in_progress'])
             ->get(['appointment_time', 'duration_minutes']);
 
-        $available = array_filter($slots, function ($slot) use ($date, $duration, $booked) {
+        $available = array_filter($slots, function ($slot) use ($date, $duration, $booked, $totalWorkers) {
             $slotStart = Carbon::parse($date . ' ' . $slot);
             $slotEnd   = $slotStart->copy()->addMinutes($duration);
 
+            $overlapCount = 0;
             foreach ($booked as $b) {
                 $bookingDuration = $b->duration_minutes ?? $duration;
                 $bStart = Carbon::parse($b->appointment_time);
@@ -69,10 +76,10 @@ class TimeslotController extends Controller
 
                 // Overlap check
                 if ($slotStart->lt($bEnd) && $slotEnd->gt($bStart)) {
-                    return false;
+                    $overlapCount++;
                 }
             }
-            return true;
+            return $overlapCount < $totalWorkers;
         });
 
         return response()->json(array_values($available));

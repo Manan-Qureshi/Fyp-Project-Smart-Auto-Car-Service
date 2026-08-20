@@ -16,7 +16,9 @@ return new class extends Migration
         });
         
         // Modify ENUM using raw SQL for reliable modification
-        DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded', 'confirmed') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded', 'confirmed') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -28,6 +30,8 @@ return new class extends Migration
             $table->dropColumn('payment_method');
         });
         
-        DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending'");
+        }
     }
 };

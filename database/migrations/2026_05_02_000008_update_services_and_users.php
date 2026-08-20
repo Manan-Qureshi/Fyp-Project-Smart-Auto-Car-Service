@@ -14,7 +14,9 @@ return new class extends Migration
         });
 
         // Add provider role to users
-        \DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','provider','worker','customer','user') DEFAULT 'customer'");
+        if (\DB::getDriverName() !== 'sqlite') {
+            \DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin','provider','worker','customer','user') DEFAULT 'customer'");
+        }
     }
 
     public function down(): void
