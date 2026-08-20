@@ -99,6 +99,23 @@
                         <a class="btn btn-primary btn-sm" href="{{ route('register') }}">Register</a>
                     @endif
                 @else
+                    {{-- NOTIFICATION BELL --}}
+                    @auth
+                    <div class="dropdown me-2" id="notif-bell-wrapper">
+                        <button class="btn btn-link text-dark p-1 position-relative" type="button" id="notifBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                            <i class="fas fa-bell fs-5"></i>
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem;display:none;">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end glass-card border-0 shadow p-0" id="notif-dropdown" style="min-width:320px;max-height:400px;overflow-y:auto;">
+                            <li class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold small">Notifications</span>
+                                <a href="#" id="notif-mark-all-read" class="text-primary small text-decoration-none" style="display:none;">Mark all read</a>
+                            </li>
+                            <li id="notif-empty" class="px-3 py-3 text-center text-muted small">No new notifications</li>
+                        </ul>
+                    </div>
+                    @endauth
+
                     <div class="dropdown">
                         <button class="btn btn-link text-dark text-decoration-none dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=667eea&color=fff"
@@ -148,7 +165,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         var alerts = document.querySelectorAll('.auto-alert');
         if (alerts.length === 0) return;
-        // Only show the first alert, hide any extras immediately
         alerts.forEach(function (alert, index) {
             if (index > 0) { alert.remove(); return; }
             setTimeout(function () {
@@ -159,5 +175,81 @@
         });
     });
 </script>
+
+@auth
+<script>
+(function () {
+    var fetchUrl   = "{{ route('notifications.fetch') }}";
+    var markUrl    = "{{ route('notifications.markRead') }}";
+    var csrfToken  = "{{ csrf_token() }}";
+    var badge      = document.getElementById('notif-badge');
+    var dropdown   = document.getElementById('notif-dropdown');
+    var emptyMsg   = document.getElementById('notif-empty');
+    var markAllBtn = document.getElementById('notif-mark-all-read');
+
+    if (!badge) return; // Not logged in or bell not present
+
+    function colorClass(color) {
+        var map = { success:'text-success', danger:'text-danger', warning:'text-warning', info:'text-info', primary:'text-primary' };
+        return map[color] || 'text-secondary';
+    }
+
+    function loadNotifications() {
+        fetch(fetchUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var count = data.count || 0;
+                // Update badge
+                if (count > 0) {
+                    badge.textContent = count > 9 ? '9+' : count;
+                    badge.style.display = '';
+                    if (markAllBtn) markAllBtn.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                    if (markAllBtn) markAllBtn.style.display = 'none';
+                }
+
+                // Remove old items (keep header li and empty li)
+                dropdown.querySelectorAll('.notif-item').forEach(function(el){ el.remove(); });
+
+                if (data.notifications && data.notifications.length > 0) {
+                    if (emptyMsg) emptyMsg.style.display = 'none';
+                    data.notifications.forEach(function(n) {
+                        var d = n.data;
+                        var li = document.createElement('li');
+                        li.className = 'notif-item border-bottom px-3 py-2';
+                        li.innerHTML = '<div class="d-flex align-items-start gap-2">' +
+                            '<i class="fas ' + (d.icon || 'fa-bell') + ' mt-1 ' + colorClass(d.color) + '"></i>' +
+                            '<div class="flex-grow-1">' +
+                                '<div class="fw-semibold small">' + (d.title || 'Notification') + '</div>' +
+                                '<div class="text-muted" style="font-size:.78rem;">' + (d.message || '') + '</div>' +
+                                '<div class="text-muted" style="font-size:.7rem;">' + (n.created || '') + '</div>' +
+                            '</div>' +
+                        '</div>';
+                        dropdown.appendChild(li);
+                    });
+                } else {
+                    if (emptyMsg) emptyMsg.style.display = '';
+                }
+            })
+            .catch(function(){});
+    }
+
+    // Mark all read
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(markUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function(){ loadNotifications(); });
+        });
+    }
+
+    loadNotifications();
+    setInterval(loadNotifications, 30000); // Poll every 30 seconds
+})();
+</script>
+@endauth
 </body>
 </html>

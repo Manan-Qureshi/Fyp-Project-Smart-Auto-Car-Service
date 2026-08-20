@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Every minute: alert workers whose service starts within the next 5 minutes
+        $schedule->command('notify:upcoming-services')->everyMinute();
+
+        // Every hour: alert providers about today's bookings still missing a worker
+        $schedule->command('notify:unassigned-services')->hourly();
     }
 
     /**

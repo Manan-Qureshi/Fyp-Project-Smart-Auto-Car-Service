@@ -162,6 +162,18 @@ class BookingController extends Controller
             }
 
             $booking->update(['status' => $newStatus]);
+            
+            if ($newStatus === 'in_progress' && $booking->user) {
+                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'started'));
+            } elseif ($newStatus === 'completed') {
+                if ($booking->user) {
+                    $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
+                }
+                if ($booking->serviceProvider && $booking->serviceProvider->user) {
+                    $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'worker_finished'));
+                }
+            }
+
             return back()->with('success', 'Booking status updated to ' . ucfirst(str_replace('_', ' ', $newStatus)) . '.');
         }
 
@@ -208,6 +220,16 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        if ($booking->serviceProvider && $booking->serviceProvider->user) {
+            $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_customer'));
+        }
+        if ($booking->provider_worker_id) {
+            $worker = \App\Models\Worker::find($booking->provider_worker_id);
+            if ($worker && $worker->user) {
+                $worker->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_customer'));
+            }
+        }
 
         return back()->with('success', 'Booking cancelled. Refund initiated if applicable.');
     }

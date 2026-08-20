@@ -94,6 +94,13 @@ class PaymentController extends Controller
 
             session()->forget(['cart', 'selected_car_model']);
 
+            // Notify the provider of the new booking
+            if ($booking->serviceProvider && $booking->serviceProvider->user) {
+                $booking->serviceProvider->user->notify(
+                    new \App\Notifications\ServiceStatusUpdated($booking, 'booking_received')
+                );
+            }
+
             return redirect()->route('bookings.confirmation', $booking)
                 ->with('success', 'Payment successful! Your booking is confirmed.');
         }

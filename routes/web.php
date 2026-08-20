@@ -38,6 +38,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/home', [App\Http\Controllers\DashboardController::class, 'index'])->name('home');
 
+    // Notifications
+    Route::get('/notifications/fetch', [App\Http\Controllers\DashboardController::class, 'fetchNotifications'])->name('notifications.fetch');
+    Route::post('/notifications/mark-read', [App\Http\Controllers\DashboardController::class, 'markNotificationsRead'])->name('notifications.markRead');
+
     // Profile
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');

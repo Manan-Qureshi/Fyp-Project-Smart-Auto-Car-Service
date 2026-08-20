@@ -126,5 +126,36 @@ class DashboardController extends Controller
 
         return view('customer.dashboard', compact('bookings', 'lastProvider'));
     }
+
+    /**
+     * AJAX: Return the current user's latest unread database notifications.
+     */
+    public function fetchNotifications()
+    {
+        $user = Auth::user();
+        $notifications = $user->unreadNotifications()
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(fn($n) => [
+                'id'      => $n->id,
+                'data'    => $n->data,
+                'created' => $n->created_at->diffForHumans(),
+            ]);
+
+        return response()->json([
+            'count'         => $user->unreadNotifications()->count(),
+            'notifications' => $notifications,
+        ]);
+    }
+
+    /**
+     * AJAX: Mark all notifications as read.
+     */
+    public function markNotificationsRead()
+    {
+        Auth::user()->unreadNotifications()->update(['read_at' => now()]);
+        return response()->json(['ok' => true]);
+    }
 }
 

@@ -60,10 +60,21 @@ class ProviderDashboardController extends Controller
             ->where('service_provider_id', $provider->id)
             ->firstOrFail();
 
+        // Validation for today assignment only
+        $appointmentDate = \Carbon\Carbon::parse($booking->appointment_time)->toDateString();
+        $today = now()->toDateString();
+        if ($appointmentDate > $today) {
+            return back()->with('error', 'You cannot assign a worker to a service scheduled for a future date. Assignments can only be made on the day of the service.');
+        }
+
         $booking->update([
             'provider_worker_id' => $worker->id,
             'status'             => 'assigned',
         ]);
+
+        if ($booking->user) {
+            $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'assigned'));
+        }
 
         return back()->with('success', 'Worker "' . $worker->name . '" assigned to booking.');
     }
