@@ -154,7 +154,7 @@ body {
 }
 
 .smart-navbar .navbar-narrow {
-    max-width: 70%;
+    max-width: 90%;
     margin: 0 auto;
     width: 100%;
 }
@@ -241,7 +241,7 @@ body {
 }
 
 .smart-footer .footer-narrow {
-    max-width: 70%;
+    max-width: 90%;
     margin: 0 auto;
     width: 100%;
 }
@@ -342,7 +342,7 @@ body {
 }
 
 .sacs-hero__inner {
-    max-width: 70%;
+    max-width: 90%;
     margin: 0 auto;
     width: 100%;
     display: grid;
@@ -473,7 +473,7 @@ body {
 }
 
 .sacs-providers__inner {
-    max-width: 70%;
+    max-width: 90%;
     margin: 0 auto;
     width: 100%;
 }
