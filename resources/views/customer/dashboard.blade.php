@@ -44,7 +44,6 @@
                 </table>
             </div>
         </div>
-    @endif
 </div>
 
 {{-- Rating Modals (outside the table) --}}
