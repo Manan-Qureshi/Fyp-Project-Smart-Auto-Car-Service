@@ -4,49 +4,48 @@
     <div class="glass-card p-4 rounded-4 shadow">
         {{-- Header --}}
         <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;font-size:1.2rem">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div>
-                <h4 class="fw-bold mb-0">Book Service</h4>
-                <small class="text-muted">{{ $provider->business_name }}</small>
-            </div>
+            <i class="fas fa-shopping-cart text-primary" style="font-size:1.8rem"></i>
+            <h4 class="fw-bold mb-0">Checkout</h4>
         </div>
 
-        {{-- Service & Price Summary --}}
-        {{-- Services & Price Summary --}}
-        <div class="rounded-3 p-3 mb-4" style="background:linear-gradient(135deg,#667eea22,#764ba222); border:1px solid #667eea33">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-bold">Cart Items</div>
-                <small class="text-muted">
-                    <i class="fas fa-clock me-1"></i>{{ $totalDuration }} min total
-                </small>
+        {{-- Car Model --}}
+        @if($selectedCar)
+            <div class="text-center text-primary fw-semibold mb-3">
+                {{ $selectedCar['type_name'] }} {{ $selectedCar['name'] }}
             </div>
-            <ul class="list-unstyled small mb-3 ps-3" style="border-left:2px solid #667eea">
-                @foreach($services as $srv)
-                    <li><i class="fas fa-check text-primary me-2"></i>{{ $srv->name }}</li>
-                @endforeach
-            </ul>
-            <div class="d-flex justify-content-between align-items-end mt-2 pt-2 border-top">
-                <small class="text-muted">
-                    @if($selectedCar)
-                        Car: {{ $selectedCar['type_name'] }} — {{ $selectedCar['name'] }}
-                    @endif
-                </small>
+        @endif
+
+        {{-- Services Detail Table --}}
+        <div class="mb-4">
+            <table class="table table-borderless mb-0" style="border-bottom:1px solid #dee2e6">
+                <thead>
+                    <tr style="border-bottom:1px solid #dee2e6">
+                        <th class="ps-0 text-muted fw-semibold small">Service</th>
+                        <th class="text-muted fw-semibold small text-center">Duration</th>
+                        <th class="pe-0 text-muted fw-semibold small text-end">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($services as $srv)
+                        @php
+                            $modifier = (isset($carModel) && $carModel) ? $carModel->price_modifier : 1;
+                            $srvPrice = round($srv->base_price * $modifier, 2);
+                        @endphp
+                        <tr>
+                            <td class="ps-0">{{ $srv->name }}</td>
+                            <td class="text-center text-muted">{{ $srv->duration_minutes }} min</td>
+                            <td class="pe-0 text-end">PKR {{ number_format($srvPrice) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-between align-items-center pt-2">
+                <strong>Total</strong>
                 <div class="text-end">
-                    <div class="fs-5 fw-bold text-primary">PKR {{ number_format($finalPrice) }}</div>
-                    <small class="text-muted">Online payment only</small>
+                    <span class="text-muted small me-3">{{ $totalDuration }} min</span>
+                    <span class="fs-5 fw-bold text-primary">PKR {{ number_format($finalPrice) }}</span>
                 </div>
             </div>
-        </div>
-
-        {{-- Provider Hours --}}
-        <div class="alert alert-info rounded-3 py-2 px-3 small mb-4">
-            <i class="fas fa-store me-2"></i>
-            <strong>Working hours:</strong>
-            {{ \Carbon\Carbon::parse($provider->open_time ?? '08:00')->format('h:i A') }}
-            &ndash;
-            {{ \Carbon\Carbon::parse($provider->close_time ?? '18:00')->format('h:i A') }}
         </div>
 
         <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
@@ -61,42 +60,24 @@
             <input type="hidden" name="appointment_date" id="hiddenDate">
             <input type="hidden" name="appointment_time" id="hiddenTime">
 
-            {{-- Day Selector --}}
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Select Day <span class="text-danger">*</span></label>
-                <div class="d-flex gap-3">
-                    @php
-                        $today    = \Carbon\Carbon::today();
-                        $tomorrow = \Carbon\Carbon::tomorrow();
-                    @endphp
-                    <button type="button" id="btnToday"
-                        class="btn btn-outline-primary rounded-pill flex-grow-1 py-3 day-btn"
-                        data-date="{{ $today->format('Y-m-d') }}">
-                        <i class="fas fa-sun me-2"></i>
-                        <strong>Today</strong><br>
-                        <small class="text-muted">{{ $today->format('D, d M') }}</small>
-                    </button>
-                    <button type="button" id="btnTomorrow"
-                        class="btn btn-outline-primary rounded-pill flex-grow-1 py-3 day-btn"
-                        data-date="{{ $tomorrow->format('Y-m-d') }}">
-                        <i class="fas fa-moon me-2"></i>
-                        <strong>Tomorrow</strong><br>
-                        <small class="text-muted">{{ $tomorrow->format('D, d M') }}</small>
-                    </button>
+            {{-- Date Selector Dropdown --}}
+            @php
+                $today    = \Carbon\Carbon::today();
+                $tomorrow = \Carbon\Carbon::tomorrow();
+            @endphp
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <select id="dateSelect" class="form-select rounded-3">
+                        <option value="">Select Date</option>
+                        <option value="{{ $today->format('Y-m-d') }}">Today — {{ $today->format('D, d M') }}</option>
+                        <option value="{{ $tomorrow->format('Y-m-d') }}">Tomorrow — {{ $tomorrow->format('D, d M') }}</option>
+                    </select>
                 </div>
-            </div>
-
-            {{-- Time Slot Selector --}}
-            <div class="mb-4" id="slotSection" style="display:none">
-                <label class="form-label fw-semibold">Available Time Slots <span class="text-danger">*</span></label>
-                <div id="slotLoading" class="text-muted small mb-2" style="display:none">
-                    <i class="fas fa-spinner fa-spin me-1"></i> Loading slots...
+                <div class="col-6">
+                    <select id="timeSelect" class="form-select rounded-3" disabled>
+                        <option value="">Select Date First</option>
+                    </select>
                 </div>
-                <div id="slotGrid" class="d-flex flex-wrap gap-2"></div>
-                <div id="slotEmpty" class="text-muted small" style="display:none">
-                    <i class="fas fa-calendar-times me-1"></i> No slots available for this day.
-                </div>
-                <input type="hidden" id="selectedSlot">
             </div>
 
             {{-- Notes --}}
@@ -108,14 +89,7 @@
 
             <hr class="my-4">
 
-            {{-- Payment info --}}
-            <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light mb-4">
-                <i class="fab fa-stripe fa-2x text-primary"></i>
-                <div>
-                    <div class="fw-semibold small">Secure Online Payment via Stripe</div>
-                    <div class="text-muted small">You'll be redirected to Stripe's secure checkout page.</div>
-                </div>
-            </div>
+
 
             <div class="d-flex gap-2">
                 <a href="{{ route('providers.show', $provider) }}" class="btn btn-outline-secondary rounded-pill flex-grow-1">
@@ -136,68 +110,57 @@ const DURATION    = {{ $totalDuration }};
 let selectedDate  = null;
 let selectedTime  = null;
 
-document.querySelectorAll('.day-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
-        this.classList.add('active', 'btn-primary');
-        this.classList.remove('btn-outline-primary');
-        document.querySelectorAll('.day-btn:not(.active)').forEach(b => b.classList.add('btn-outline-primary'));
+const dateSelect = document.getElementById('dateSelect');
+const timeSelect = document.getElementById('timeSelect');
 
-        selectedDate = this.dataset.date;
-        document.getElementById('hiddenDate').value = selectedDate;
+dateSelect.addEventListener('change', function () {
+    selectedDate = this.value;
+    document.getElementById('hiddenDate').value = selectedDate;
 
-        // Reset slot selection
-        selectedTime = null;
-        document.getElementById('hiddenTime').value = '';
-        document.getElementById('submitBtn').disabled = true;
+    // Reset time
+    selectedTime = null;
+    document.getElementById('hiddenTime').value = '';
+    document.getElementById('submitBtn').disabled = true;
 
-        loadSlots(selectedDate);
-    });
+    if (!selectedDate) {
+        timeSelect.innerHTML = '<option value="">Select Date First</option>';
+        timeSelect.disabled = true;
+        return;
+    }
+
+    loadSlots(selectedDate);
+});
+
+timeSelect.addEventListener('change', function () {
+    selectedTime = this.value;
+    document.getElementById('hiddenTime').value = selectedTime;
+    document.getElementById('submitBtn').disabled = !selectedTime;
 });
 
 function loadSlots(date) {
-    const section = document.getElementById('slotSection');
-    const grid    = document.getElementById('slotGrid');
-    const loading = document.getElementById('slotLoading');
-    const empty   = document.getElementById('slotEmpty');
-
-    section.style.display = 'block';
-    loading.style.display = 'block';
-    grid.innerHTML = '';
-    empty.style.display = 'none';
+    timeSelect.innerHTML = '<option value="">Loading...</option>';
+    timeSelect.disabled = true;
 
     fetch(`/api/timeslots?provider_id=${PROVIDER_ID}&date=${date}&duration=${DURATION}`)
         .then(r => r.json())
         .then(slots => {
-            loading.style.display = 'none';
             if (!slots.length) {
-                empty.style.display = 'block';
+                timeSelect.innerHTML = '<option value="">No slots available</option>';
+                timeSelect.disabled = true;
                 return;
             }
+            timeSelect.innerHTML = '<option value="">Select Time</option>';
             slots.forEach(slot => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn-outline-secondary rounded-pill slot-btn px-3';
-                btn.textContent = formatTime(slot);
-                btn.dataset.time = slot;
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.slot-btn').forEach(b => {
-                        b.classList.remove('btn-primary', 'active');
-                        b.classList.add('btn-outline-secondary');
-                    });
-                    this.classList.remove('btn-outline-secondary');
-                    this.classList.add('btn-primary', 'active');
-                    selectedTime = this.dataset.time;
-                    document.getElementById('hiddenTime').value = selectedTime;
-                    document.getElementById('submitBtn').disabled = false;
-                });
-                grid.appendChild(btn);
+                const opt = document.createElement('option');
+                opt.value = slot;
+                opt.textContent = formatTime(slot);
+                timeSelect.appendChild(opt);
             });
+            timeSelect.disabled = false;
         })
         .catch(() => {
-            loading.style.display = 'none';
-            empty.textContent = 'Could not load slots. Please try again.';
-            empty.style.display = 'block';
+            timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+            timeSelect.disabled = true;
         });
 }
 
@@ -208,11 +171,10 @@ function formatTime(t) {
     return `${hh}:${String(m).padStart(2,'0')} ${ampm}`;
 }
 
-// Prevent form submit if day/time not selected
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
     if (!selectedDate || !selectedTime) {
         e.preventDefault();
-        alert('Please select a day and time slot.');
+        alert('Please select a date and time slot.');
     }
 });
 </script>
