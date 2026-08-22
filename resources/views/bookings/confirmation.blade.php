@@ -2,12 +2,9 @@
 
 @section('content')
 <div class="container py-4" style="max-width:620px">
-    <div class="text-center py-5">
-        <div class="mb-4" style="font-size:5rem; color:#22c55e">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <h2 class="fw-bold text-success mb-2">Booking Confirmed!</h2>
-        <p class="text-muted mb-4">Your payment was successful and your booking is confirmed.</p>
+    <div class="text-center py-3">
+        <h3 class="fw-bold text-success mb-1"><i class="fas fa-check-circle me-2"></i>Booking Confirmed!</h3>
+        <p class="text-muted mb-3">Your payment was successful and your booking is confirmed.</p>
     </div>
 
     <div class="glass-card p-4 rounded-4 shadow mb-4">

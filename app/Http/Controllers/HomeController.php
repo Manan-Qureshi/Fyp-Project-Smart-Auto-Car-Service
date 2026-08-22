@@ -39,6 +39,12 @@ class HomeController extends Controller
 
         $allCarTypes = CarType::with('models')->get();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('partials.providers_list', compact('providers', 'lat', 'lng'))->render()
+            ]);
+        }
+
         return view('welcome', compact('providers', 'allCarTypes', 'lat', 'lng'));
     }
 }
