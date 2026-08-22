@@ -32,7 +32,7 @@ class DashboardController extends Controller
         $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
         $totalRevenue = Commission::sum('commission_amount');
         $totalEarning = Commission::sum('provider_earning');
-        $totalBookings = Booking::count();
+        $totalBookings = Booking::where('status', '!=', 'payment_pending')->count();
 
         $filterDate     = $request->get('filter_date');
         $filterProvider = $request->get('filter_provider');
@@ -45,6 +45,7 @@ class DashboardController extends Controller
         if ($filtered) {
             // Build base query with filters
             $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
+                ->where('status', '!=', 'payment_pending')
                 ->latest();
 
             if ($filterDate) {
@@ -64,6 +65,7 @@ class DashboardController extends Controller
         } else {
             // Default view: fetch 5 most recent bookings
             $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
+                ->where('status', '!=', 'payment_pending')
                 ->latest();
             $bookingTotal = (clone $baseQuery)->count();
             $bookings = $baseQuery->limit(5)->get();
@@ -117,6 +119,7 @@ class DashboardController extends Controller
     {
         $bookings = Booking::with(['service', 'serviceProvider', 'worker', 'payment', 'rating'])
             ->where('user_id', Auth::user()->id)
+            ->where('status', '!=', 'payment_pending')
             ->latest()
             ->get();
 

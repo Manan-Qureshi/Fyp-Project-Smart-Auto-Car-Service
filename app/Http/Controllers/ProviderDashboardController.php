@@ -30,6 +30,7 @@ class ProviderDashboardController extends Controller
 
         $bookings = Booking::with(['user', 'service', 'carModel', 'worker'])
             ->where('service_provider_id', $provider->id)
+            ->where('status', '!=', 'payment_pending')
             ->latest()
             ->get();
 
@@ -37,7 +38,7 @@ class ProviderDashboardController extends Controller
 
         $stats = [
             'total'     => $bookings->count(),
-            'pending'   => $bookings->whereIn('status', ['confirmed', 'payment_pending'])->count(),
+            'pending'   => $bookings->where('status', 'confirmed')->count(),
             'active'    => $bookings->whereIn('status', ['accepted', 'assigned', 'in_progress'])->count(),
             'completed' => $bookings->where('status', 'completed')->count(),
         ];

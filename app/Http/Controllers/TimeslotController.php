@@ -61,7 +61,7 @@ class TimeslotController extends Controller
         // Remove slots that conflict with existing confirmed bookings
         $booked = Booking::where('service_provider_id', $provider->id)
             ->whereDate('appointment_time', $date)
-            ->whereIn('status', ['confirmed', 'payment_pending', 'accepted', 'assigned', 'in_progress'])
+            ->whereIn('status', ['confirmed', 'accepted', 'assigned', 'in_progress'])
             ->get(['appointment_time', 'duration_minutes']);
 
         $available = array_filter($slots, function ($slot) use ($date, $duration, $booked, $totalWorkers) {

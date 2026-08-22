@@ -10,7 +10,6 @@
 @php
     $statusColor = match($booking->status) {
         'confirmed'       => 'success',
-        'payment_pending' => 'warning',
         'accepted'        => 'info',
         'assigned'        => 'info',
         'in_progress'     => 'primary',

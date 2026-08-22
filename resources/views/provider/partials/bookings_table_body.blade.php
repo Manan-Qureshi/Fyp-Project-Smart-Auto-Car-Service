@@ -7,7 +7,6 @@
 @php
     $sc = match($b->status) {
         'confirmed'       => 'success',
-        'payment_pending' => 'warning',
         'accepted'        => 'info',
         'assigned'        => 'info',
         'in_progress'     => 'primary',

@@ -102,7 +102,7 @@ class BookingController extends Controller
 
         $activeBookings = Booking::where('service_provider_id', $request->service_provider_id)
             ->whereDate('appointment_time', $request->appointment_date)
-            ->whereIn('status', ['confirmed', 'payment_pending', 'accepted', 'assigned', 'in_progress'])
+            ->whereIn('status', ['confirmed', 'accepted', 'assigned', 'in_progress'])
             ->get();
 
         $overlapCount = 0;

@@ -8,7 +8,7 @@
 @else
 @foreach($bookings as $b)
 @php $sc = match($b->status){
-    'confirmed'=>'success','payment_pending'=>'warning',
+    'confirmed'=>'success',
     'in_progress'=>'primary','completed'=>'dark',
     'cancelled'=>'danger', default=>'secondary'
 }; @endphp
