@@ -36,63 +36,20 @@
         </div>
 
         {{-- Quick Links --}}
-        <div class="d-flex gap-2 mb-4 flex-wrap">
-            <a href="{{ route('admin.providers.create') }}" class="btn btn-primary rounded-pill">
-                <i class="fas fa-plus me-1"></i> Add Provider
-            </a>
-            @if(Route::has('admin.services.index'))
+        @if(Route::has('admin.services.index'))
+            <div class="d-flex gap-2 mb-4 flex-wrap">
                 <a href="{{ route('admin.services.index') }}" class="btn btn-outline-primary rounded-pill">
                     <i class="fas fa-concierge-bell me-1"></i> Services
                 </a>
-            @endif
-        </div>
-
-        {{-- Providers Table --}}
-        <div class="glass-card p-4 rounded-4 shadow mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="fas fa-store me-2"></i>Service Providers</h5>
-                <a href="{{ route('admin.providers.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill">View
-                    All</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Provider</th>
-                            <th>Owner</th>
-                            <th>Address</th>
-                            <th>Bookings</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($providers->take(5) as $p)
-                            <tr>
-                                <td class="fw-semibold">{{ $p->business_name }}</td>
-                                <td>{{ optional($p->owner)->name }}</td>
-                                <td class="text-muted small">{{ $p->address }}</td>
-                                <td>{{ $p->bookings_count }}</td>
-
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.providers.edit', $p) }}"
-                                            class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>
-                                        <form action="{{ route('admin.providers.destroy', $p) }}" method="POST">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger rounded-pill">Remove</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        @endif
 
         {{-- Bookings Filter + Table --}}
         <div class="glass-card p-4 rounded-4 shadow">
-            <h5 class="fw-bold mb-3"><i class="fas fa-calendar-alt me-2 text-primary"></i>Bookings</h5>
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                {{ $filtered ? 'Filtered Bookings' : 'Recent Bookings (Last 5)' }}
+            </h5>
 
             {{-- Filter Form --}}
             <form method="GET" action="{{ route('admin.dashboard') }}" class="row g-2 align-items-end mb-4">
@@ -123,10 +80,10 @@
             </form>
 
             {{-- Bookings Table --}}
-            @if(!$filtered)
+            @if($bookings->isEmpty())
                 <div class="text-center py-5 text-muted">
                     <i class="fas fa-calendar-alt fa-3x mb-3 opacity-25"></i>
-                    <p>Select a date or service provider above to view bookings.</p>
+                    <p>No bookings found.</p>
                 </div>
             @else
                 <div class="table-responsive">
@@ -149,22 +106,28 @@
                     </table>
                 </div>
 
-                {{-- Show All button --}}
-                @if(!$showAll && $bookingTotal > 10)
+                {{-- Pagination / Show All --}}
+                @if($filtered)
+                    @if(!$showAll && $bookingTotal > 10)
+                        <div class="text-center mt-3">
+                            <p class="text-muted small mb-2">Showing 10 of {{ $bookingTotal }} bookings</p>
+                            <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['show_all' => 1])) }}"
+                                class="btn btn-outline-primary rounded-pill px-4">
+                                <i class="fas fa-chevron-down me-1"></i> Show All {{ $bookingTotal }} Bookings
+                            </a>
+                        </div>
+                    @elseif($showAll)
+                        <div class="text-center mt-3">
+                            <p class="text-muted small mb-2">Showing all {{ $bookingTotal }} bookings</p>
+                            <a href="{{ route('admin.dashboard', array_diff_key(request()->query(), ['show_all' => ''])) }}"
+                                class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-chevron-up me-1"></i> Show Fewer
+                            </a>
+                        </div>
+                    @endif
+                @else
                     <div class="text-center mt-3">
-                        <p class="text-muted small mb-2">Showing 10 of {{ $bookingTotal }} bookings</p>
-                        <a href="{{ route('admin.dashboard', array_merge(request()->query(), ['show_all' => 1])) }}"
-                            class="btn btn-outline-primary rounded-pill px-4">
-                            <i class="fas fa-chevron-down me-1"></i> Show All {{ $bookingTotal }} Bookings
-                        </a>
-                    </div>
-                @elseif($showAll)
-                    <div class="text-center mt-3">
-                        <p class="text-muted small mb-2">Showing all {{ $bookingTotal }} bookings</p>
-                        <a href="{{ route('admin.dashboard', array_diff_key(request()->query(), ['show_all' => ''])) }}"
-                            class="btn btn-outline-secondary rounded-pill px-4">
-                            <i class="fas fa-chevron-up me-1"></i> Show Fewer
-                        </a>
+                        <p class="text-muted small mb-0">Showing 5 most recent bookings</p>
                     </div>
                 @endif
             @endif

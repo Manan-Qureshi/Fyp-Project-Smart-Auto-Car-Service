@@ -54,13 +54,19 @@ class DashboardController extends Controller
                 $baseQuery->where('service_provider_id', $filterProvider);
             }
 
-            // Count BEFORE applying limit â€” clone so the builder stays clean
+            // Count BEFORE applying limit — clone so the builder stays clean
             $bookingTotal = (clone $baseQuery)->count();
 
             // Fetch the page
             $bookings = $showAll
                 ? $baseQuery->get()
                 : $baseQuery->limit(10)->get();
+        } else {
+            // Default view: fetch 5 most recent bookings
+            $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
+                ->latest();
+            $bookingTotal = (clone $baseQuery)->count();
+            $bookings = $baseQuery->limit(5)->get();
         }
 
         if (request()->ajax()) {

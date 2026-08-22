@@ -148,7 +148,7 @@
                     @endif
                 @endforeach
                 @if ($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0">
+                    <div class="auto-alert alert alert-danger alert-dismissible fade show shadow-sm border-0">
                         <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
@@ -161,18 +161,13 @@
 
 @stack('scripts')
 <script>
-    // Auto-dismiss session flash alerts after 4 seconds
-    document.addEventListener('DOMContentLoaded', function () {
-        var alerts = document.querySelectorAll('.auto-alert');
-        if (alerts.length === 0) return;
-        alerts.forEach(function (alert, index) {
-            if (index > 0) { alert.remove(); return; }
-            setTimeout(function () {
-                alert.classList.remove('show');
-                alert.classList.add('fade');
-                setTimeout(function () { alert.remove(); }, 500);
-            }, 4000);
-        });
+    // Auto-dismiss session flash alerts after 4 seconds using jQuery
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('.auto-alert').fadeOut('slow', function () {
+                $(this).remove();
+            });
+        }, 4000);
     });
 </script>
 
