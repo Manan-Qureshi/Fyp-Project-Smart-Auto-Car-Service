@@ -2,7 +2,7 @@
 
 @section('content')
 
-    {{-- â”€â”€ HERO SECTION â”€â”€ --}}
+    {{-- ── HERO SECTION ── --}}
     <section class="sacs-hero">
         <div class="sacs-hero__inner">
 
@@ -30,7 +30,7 @@
                     onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700&q=80'; this.style.objectFit='cover';"
                     alt="Car" class="sacs-hero__car-img">
 
-                {{-- â”€â”€ FIND NEAREST PROVIDER BUTTON (right below the car) â”€â”€ --}}
+                {{-- FIND NEAREST PROVIDER BUTTON --}}
                 <div class="sacs-hero__geo-wrap">
                     <button id="findNearestBtn" class="sacs-hero__geo-btn">
                         <i class="fas fa-location-crosshairs me-2"></i>
@@ -38,7 +38,12 @@
                     </button>
                     <p id="geoStatus" class="sacs-hero__geo-status"></p>
                 </div>
-               {{-- ── PROVIDERS SECTION ── --}}
+            </div>
+
+        </div>
+    </section>
+
+    {{-- ── PROVIDERS SECTION ── --}}
     <section class="sacs-providers" id="providersSection">
         <div class="sacs-providers__inner" id="providersContainer">
             @include('partials.providers_list')
@@ -87,7 +92,7 @@
 @push('scripts')
     <script>
         // Car type -> model cascade
-        document.getElementById('carTypeSelect').addEventListener('change', function () {
+        document.getElementById('carTypeSelect')?.addEventListener('change', function () {
             const typeId = this.value;
             const modelSelect = document.getElementById('carModelSelect');
             modelSelect.innerHTML = '<option>Loading...</option>';
@@ -101,7 +106,7 @@
         });
 
         // Find Nearest Provider — geolocation via AJAX (No page reload)
-        document.getElementById('findNearestBtn').addEventListener('click', function () {
+        document.getElementById('findNearestBtn')?.addEventListener('click', function () {
             const btn = this;
             const status = document.getElementById('geoStatus');
 
@@ -152,10 +157,4 @@
             );
         });
     </script>
-@endpush           },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        });
-    </script>
-
 @endpush
