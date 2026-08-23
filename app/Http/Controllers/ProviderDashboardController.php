@@ -28,25 +28,51 @@ class ProviderDashboardController extends Controller
             return view('provider.pending');
         }
 
-        $bookings = Booking::with(['user', 'service', 'carModel', 'worker'])
-            ->where('service_provider_id', $provider->id)
-            ->latest()
+        $request = request();
+        $filterDate = $request->get('filter_date');
+        $showAll    = $request->boolean('show_all');
+
+        $filtered = (bool) $filterDate;
+
+        // Base query for overall provider stats (excluding payment_pending)
+        $allBookings = Booking::where('service_provider_id', $provider->id)
+            ->where('status', '!=', 'payment_pending')
             ->get();
 
-        $workers = $provider->workers()->get();
-
         $stats = [
-            'total'     => $bookings->count(),
-            'pending'   => $bookings->whereIn('status', ['confirmed', 'payment_pending'])->count(),
-            'active'    => $bookings->whereIn('status', ['accepted', 'assigned', 'in_progress'])->count(),
-            'completed' => $bookings->where('status', 'completed')->count(),
+            'total'     => $allBookings->count(),
+            'pending'   => $allBookings->where('status', 'confirmed')->count(),
+            'active'    => $allBookings->whereIn('status', ['accepted', 'assigned', 'in_progress'])->count(),
+            'completed' => $allBookings->where('status', 'completed')->count(),
         ];
+
+        // Fetch bookings for table view (excluding payment_pending)
+        $baseQuery = Booking::with(['user', 'service', 'carModel', 'worker'])
+            ->where('service_provider_id', $provider->id)
+            ->where('status', '!=', 'payment_pending')
+            ->latest();
+
+        if ($filterDate) {
+            $baseQuery->whereDate('appointment_time', $filterDate);
+        }
+
+        $bookingTotal = (clone $baseQuery)->count();
+
+        if ($filtered) {
+            $bookings = $showAll
+                ? $baseQuery->get()
+                : $baseQuery->limit(10)->get();
+        } else {
+            $bookings = $baseQuery->limit(5)->get();
+        }
+
+        $workers = $provider->workers()->get();
 
         if (request()->ajax()) {
             return response()->json(['html' => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render()]);
         }
 
-        return view('provider.dashboard', compact('provider', 'bookings', 'workers', 'stats'));
+        return view('provider.dashboard', compact('provider', 'bookings', 'workers', 'stats', 'filterDate', 'filtered', 'bookingTotal', 'showAll'));
     }
 
     public function assign(Request $request, Booking $booking)
