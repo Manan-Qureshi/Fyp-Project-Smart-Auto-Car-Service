@@ -105,56 +105,103 @@
                 });
         });
 
-        // Find Nearest Provider — geolocation via AJAX (No page reload)
-        document.getElementById('findNearestBtn')?.addEventListener('click', function () {
-            const btn = this;
+        // Helper function to fetch nearest providers via AJAX without reloading page
+        function loadNearestProviders(lat, lng, scrollIntoView = false) {
+            const btn = document.getElementById('findNearestBtn');
+            const status = document.getElementById('geoStatus');
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Finding nearest providers...';
+            }
+            if (status) status.textContent = '';
+
+            return fetch('/?lat=' + lat + '&lng=' + lng, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
+                }
+                if (data.html) {
+                    const container = document.getElementById('providersContainer');
+                    if (container) container.innerHTML = data.html;
+                    if (scrollIntoView) {
+                        document.getElementById('providersSection')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            })
+            .catch(err => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
+                }
+                if (status) {
+                    status.textContent = 'Failed to fetch providers. Please try again.';
+                    status.style.color = '#dc3545';
+                }
+            });
+        }
+
+        // Request browser geolocation
+        function requestUserLocation(scrollIntoView = true) {
+            const btn = document.getElementById('findNearestBtn');
             const status = document.getElementById('geoStatus');
 
             if (!navigator.geolocation) {
-                status.textContent = 'Geolocation is not supported by your browser.';
-                status.style.color = '#dc3545';
+                if (status) {
+                    status.textContent = 'Geolocation is not supported by your browser.';
+                    status.style.color = '#dc3545';
+                }
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Finding nearest providers...';
-            status.textContent = '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Finding nearest providers...';
+            }
+            if (status) status.textContent = '';
 
             navigator.geolocation.getCurrentPosition(
                 pos => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    
-                    fetch('/?lat=' + lat + '&lng=' + lng, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
-                        if (data.html) {
-                            document.getElementById('providersContainer').innerHTML = data.html;
-                            document.getElementById('providersSection').scrollIntoView({ behavior: 'smooth' });
-                        }
-                    })
-                    .catch(err => {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
-                        status.textContent = 'Failed to fetch providers. Please try again.';
-                        status.style.color = '#dc3545';
-                    });
+                    loadNearestProviders(pos.coords.latitude, pos.coords.longitude, scrollIntoView);
                 },
                 err => {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
-                    status.textContent = 'Location access denied. Please allow location in your browser settings.';
-                    status.style.color = '#dc3545';
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-location-crosshairs me-2"></i> Find Nearest Provider';
+                    }
+                    if (status) {
+                        status.textContent = 'Location access denied. Please allow location in your browser settings.';
+                        status.style.color = '#dc3545';
+                    }
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
+        }
+
+        // Button click trigger
+        document.getElementById('findNearestBtn')?.addEventListener('click', function () {
+            requestUserLocation(true);
         });
+
+        // Auto-detect granted location permission on page load or state change
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+                if (permissionStatus.state === 'granted') {
+                    requestUserLocation(false);
+                }
+                permissionStatus.onchange = function () {
+                    if (this.state === 'granted') {
+                        requestUserLocation(true);
+                    }
+                };
+            }).catch(() => {});
+        }
     </script>
 @endpush

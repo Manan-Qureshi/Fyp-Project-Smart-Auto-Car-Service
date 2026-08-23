@@ -56,7 +56,7 @@
                 <tbody>
                 @foreach($allServices as $service)
                 @php $enabled = in_array($service->id, $enabledIds); @endphp
-                <tr class="service-card-wrapper {{ $enabled ? 'table-success opacity-100' : 'opacity-75' }}" data-category="{{ $service->category ? strtolower(trim($service->category)) : 'uncategorized' }}">
+                <tr class="service-card-wrapper {{ $enabled ? 'opacity-100' : 'opacity-75' }}" data-category="{{ $service->category ? strtolower(trim($service->category)) : 'uncategorized' }}">
                     <td class="ps-3">
                         <div class="d-flex align-items-center gap-3">
                             @if($service->image)
