@@ -28,6 +28,12 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
+# Create required directories before composer install
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+    && mkdir -p /var/www/html/storage/logs \
+    && chmod -R 775 /var/www/html/bootstrap/cache /var/www/html/storage
+
 # Install Composer Dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
