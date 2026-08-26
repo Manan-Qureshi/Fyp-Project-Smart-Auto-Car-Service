@@ -36,7 +36,7 @@
             <a href="{{ '/admin/providers' }}" class="nav-link {{ request()->routeIs('admin/providers*') ? 'active' : '' }}">
                 <i class="fas fa-store"></i> Service Providers
             </a>
-            <a href="{{ '/admin/services' }}" class="nav-link {{ request()->routeIs('admin/services*') ? 'active' : '' }}">
+            <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
                 <i class="fas fa-concierge-bell"></i> Services
             </a>
             <a href="{{ '/admin/cars' }}" class="nav-link {{ request()->routeIs('admin/cars*') ? 'active' : '' }}">

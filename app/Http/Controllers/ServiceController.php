@@ -16,11 +16,19 @@ class ServiceController extends Controller
     // -------------------------------------------------------
     public function index()
     {
-        $services = Service::orderBy('name')->get();
-        $editService = request('edit') ? Service::find(request('edit')) : null;
-        $durations = TimeDuration::ordered();
-        $editDuration = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
-        $serviceCategories = ServiceCategory::orderBy('name')->get();
+        try {
+            $services = Service::orderBy('name')->get();
+            $editService = request('edit') ? Service::find(request('edit')) : null;
+            $durations = class_exists(TimeDuration::class) ? TimeDuration::orderBy('minutes')->get() : collect();
+            $editDuration = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
+            $serviceCategories = class_exists(ServiceCategory::class) ? ServiceCategory::orderBy('name')->get() : collect();
+        } catch (\Exception $e) {
+            $services = collect();
+            $editService = null;
+            $durations = collect();
+            $editDuration = null;
+            $serviceCategories = collect();
+        }
 
         return view('admin.services.index', compact('services', 'editService', 'durations', 'editDuration', 'serviceCategories'));
     }
