@@ -56,6 +56,7 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
+        $validated['type'] = 'standard';
         Service::create($validated);
         return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
     }
@@ -123,8 +124,9 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
+        $validated['type'] = 'standard';
         $service->update($validated);
-        return redirect('/admin/services')->with('success', 'Service updated successfully.');
+        return redirect()->route('admin.services.index')->with('success', 'Service updated successfully.');
     }
 
     public function destroy(Service $service)
