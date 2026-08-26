@@ -96,24 +96,24 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/providers/{provider}', [App\Http\Controllers\AdminController::class, 'updateProvider'])->name('providers.update');
         Route::delete('/providers/{provider}', [App\Http\Controllers\AdminController::class, 'destroyProvider'])->name('providers.destroy');
 
-        // Global service catalog — explicit names to avoid admin.admin.* double prefix
+        // Global service catalog
         Route::resource('services', App\Http\Controllers\ServiceController::class)->names([
-            'index' => 'admin.services.index',
-            'create' => 'admin.services.create',
-            'store' => 'admin.services.store',
-            'show' => 'admin.services.show',
-            'edit' => 'admin.services.edit',
-            'update' => 'admin.services.update',
-            'destroy' => 'admin.services.destroy',
+            'index' => 'services.index',
+            'create' => 'services.create',
+            'store' => 'services.store',
+            'show' => 'services.show',
+            'edit' => 'services.edit',
+            'update' => 'services.update',
+            'destroy' => 'services.destroy',
         ]);
 
         // Time Duration management
-        Route::post('durations', [App\Http\Controllers\ServiceController::class, 'storeDuration'])->name('admin.durations.store');
-        Route::delete('durations/{duration}', [App\Http\Controllers\ServiceController::class, 'destroyDuration'])->name('admin.durations.destroy');
+        Route::post('durations', [App\Http\Controllers\ServiceController::class, 'storeDuration'])->name('durations.store');
+        Route::delete('durations/{duration}', [App\Http\Controllers\ServiceController::class, 'destroyDuration'])->name('durations.destroy');
 
         // Service Category management
-        Route::post('categories', [App\Http\Controllers\ServiceController::class, 'storeCategory'])->name('admin.categories.store');
-        Route::delete('categories/{category}', [App\Http\Controllers\ServiceController::class, 'destroyCategory'])->name('admin.categories.destroy');
+        Route::post('categories', [App\Http\Controllers\ServiceController::class, 'storeCategory'])->name('categories.store');
+        Route::delete('categories/{category}', [App\Http\Controllers\ServiceController::class, 'destroyCategory'])->name('categories.destroy');
 
         // Car management (kept)
         Route::get('cars', [App\Http\Controllers\AdminCarController::class, 'index'])->name('cars.index');

@@ -29,44 +29,46 @@ class DashboardController extends Controller
     {
         $request = request();
 
-        $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
-        $totalRevenue = Commission::sum('commission_amount');
-        $totalEarning = Commission::sum('provider_earning');
-        $totalBookings = Booking::count();
+        try {
+            $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
+            $totalRevenue = Commission::sum('commission_amount') ?? 0;
+            $totalEarning = Commission::sum('provider_earning') ?? 0;
+            $totalBookings = Booking::count() ?? 0;
 
-        $filterDate     = $request->get('filter_date');
-        $filterProvider = $request->get('filter_provider');
-        $showAll        = $request->boolean('show_all');
+            $filterDate     = $request->get('filter_date');
+            $filterProvider = $request->get('filter_provider');
+            $showAll        = $request->boolean('show_all');
 
-        $filtered     = $filterDate || $filterProvider;
-        $bookings     = collect();
-        $bookingTotal = 0;
+            $filtered     = $filterDate || $filterProvider;
+            $bookings     = collect();
+            $bookingTotal = 0;
 
-        if ($filtered) {
-            // Build base query with filters
-            $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
-                ->latest();
-
-            if ($filterDate) {
-                $baseQuery->whereDate('appointment_time', $filterDate);
+            if ($filtered) {
+                $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])->latest();
+                if ($filterDate) {
+                    $baseQuery->whereDate('appointment_time', $filterDate);
+                }
+                if ($filterProvider) {
+                    $baseQuery->where('service_provider_id', $filterProvider);
+                }
+                $bookingTotal = (clone $baseQuery)->count();
+                $bookings = $showAll ? $baseQuery->get() : $baseQuery->limit(10)->get();
+            } else {
+                $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])->latest();
+                $bookingTotal = (clone $baseQuery)->count();
+                $bookings = $baseQuery->limit(5)->get();
             }
-            if ($filterProvider) {
-                $baseQuery->where('service_provider_id', $filterProvider);
-            }
-
-            // Count BEFORE applying limit — clone so the builder stays clean
-            $bookingTotal = (clone $baseQuery)->count();
-
-            // Fetch the page
-            $bookings = $showAll
-                ? $baseQuery->get()
-                : $baseQuery->limit(10)->get();
-        } else {
-            // Default view: fetch 5 most recent bookings
-            $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
-                ->latest();
-            $bookingTotal = (clone $baseQuery)->count();
-            $bookings = $baseQuery->limit(5)->get();
+        } catch (\Exception $e) {
+            $providers = collect();
+            $totalRevenue = 0;
+            $totalEarning = 0;
+            $totalBookings = 0;
+            $filterDate = null;
+            $filterProvider = null;
+            $filtered = false;
+            $bookings = collect();
+            $bookingTotal = 0;
+            $showAll = false;
         }
 
         if (request()->ajax()) {
