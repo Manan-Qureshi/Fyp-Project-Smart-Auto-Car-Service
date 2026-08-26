@@ -118,7 +118,7 @@
                     <form method="POST" action="/admin/services/{{ $editService->id }}" enctype="multipart/form-data">
                         @method('PUT')
                 @else
-                    <form method="POST" action="/admin/services" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('admin.services.store') }}" enctype="multipart/form-data">
                 @endif
                 @csrf
 
