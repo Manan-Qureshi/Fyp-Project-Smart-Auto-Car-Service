@@ -56,9 +56,16 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        $validated['type'] = 'standard';
-        Service::create($validated);
-        return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
+        try {
+            $validated['type'] = 'standard';
+            if (empty($validated['duration_minutes'])) {
+                $validated['duration_minutes'] = 60;
+            }
+            Service::create($validated);
+            return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.services.index')->with('error', 'Could not create service: ' . $e->getMessage());
+        }
     }
 
     // -------------------------------------------------------
