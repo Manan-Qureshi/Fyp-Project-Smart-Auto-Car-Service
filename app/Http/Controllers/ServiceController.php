@@ -49,7 +49,7 @@ class ServiceController extends Controller
         }
 
         Service::create($validated);
-        return redirect('/admin/services')->with('success', 'Service created successfully.');
+        return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
     }
 
     // -------------------------------------------------------
