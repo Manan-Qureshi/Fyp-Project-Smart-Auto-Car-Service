@@ -122,7 +122,7 @@ class BookingController extends Controller
                 ->withInput();
         }
 
-        $booking = Booking::create([
+        $bookingData = [
             'user_id'             => Auth::id(),
             'service_id'          => $primaryService->id,
             'service_ids'         => $request->service_ids,
@@ -132,15 +132,13 @@ class BookingController extends Controller
             'duration_minutes'    => $totalDuration,
             'notes'               => $request->notes,
             'final_price'         => round($totalPrice, 2),
-            'status'              => 'payment_pending',
-            'payment_status'      => 'pending',
-        ]);
+        ];
 
         // Clear cart
         session()->forget('cart_provider_' . $request->service_provider_id);
 
         // Redirect to Stripe payment
-        return app(PaymentController::class)->checkoutBooking($booking);
+        return app(PaymentController::class)->checkoutBooking($bookingData);
     }
 
     /**

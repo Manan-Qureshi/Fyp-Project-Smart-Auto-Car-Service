@@ -15,13 +15,29 @@ class PaymentController extends Controller
     /**
      * Create a Stripe Checkout session for a booking.
      */
-    public function checkoutBooking(Booking $booking)
+    public function checkoutBooking(array $bookingData)
     {
-        if ($booking->user_id !== Auth::id()) abort(403);
+        if ($bookingData['user_id'] !== Auth::id()) abort(403);
 
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
-        $carLabel = $booking->carModel ? ' (' . $booking->carModel->name . ')' : '';
+        $service = \App\Models\Service::find($bookingData['service_id']);
+        $provider = \App\Models\ServiceProvider::find($bookingData['service_provider_id']);
+        $carModel = $bookingData['car_model_id'] ? \App\Models\CarModel::find($bookingData['car_model_id']) : null;
+        $carLabel = $carModel ? ' (' . $carModel->name . ')' : '';
+
+        // Stripe metadata values must be strings
+        $metadata = [
+            'user_id'             => (string)$bookingData['user_id'],
+            'service_id'          => (string)$bookingData['service_id'],
+            'service_ids'         => json_encode($bookingData['service_ids']),
+            'service_provider_id' => (string)$bookingData['service_provider_id'],
+            'car_model_id'        => (string)($bookingData['car_model_id'] ?? ''),
+            'appointment_time'    => (string)$bookingData['appointment_time'],
+            'duration_minutes'    => (string)$bookingData['duration_minutes'],
+            'notes'               => (string)($bookingData['notes'] ?? ''),
+            'final_price'         => (string)$bookingData['final_price'],
+        ];
 
         $session = Session::create([
             'payment_method_types' => ['card'],
@@ -29,25 +45,17 @@ class PaymentController extends Controller
                 'price_data' => [
                     'currency'     => 'pkr',
                     'product_data' => [
-                        'name'        => $booking->service->name . $carLabel,
-                        'description' => 'Provider: ' . $booking->serviceProvider->business_name,
+                        'name'        => $service->name . $carLabel,
+                        'description' => 'Provider: ' . $provider->business_name,
                     ],
-                    'unit_amount'  => (int)($booking->final_price * 100),
+                    'unit_amount'  => (int)($bookingData['final_price'] * 100),
                 ],
                 'quantity' => 1,
             ]],
             'mode'        => 'payment',
-            'success_url' => route('payment.success') . '?session_id={CHECKOUT_SESSION_ID}&booking_id=' . $booking->id,
-            'cancel_url'  => route('payment.cancel', ['booking_id' => $booking->id]),
-        ]);
-
-        // Store payment record
-        Payment::create([
-            'booking_id'        => $booking->id,
-            'stripe_session_id' => $session->id,
-            'amount'            => $booking->final_price,
-            'currency'          => 'pkr',
-            'status'            => 'pending',
+            'success_url' => route('payment.success') . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url'  => route('payment.cancel'),
+            'metadata'    => $metadata,
         ]);
 
         return redirect($session->url);
@@ -61,23 +69,36 @@ class PaymentController extends Controller
         $stripe  = new \Stripe\StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->get('session_id'));
 
-        $booking = Booking::with(['service', 'serviceProvider'])->findOrFail($request->get('booking_id'));
-
         if ($session->payment_status === 'paid') {
+            $metadata = $session->metadata->toArray();
+
+            // Create Booking in database now
+            $booking = Booking::create([
+                'user_id'             => (int)$metadata['user_id'],
+                'service_id'          => (int)$metadata['service_id'],
+                'service_ids'         => json_decode($metadata['service_ids'], true),
+                'service_provider_id' => (int)$metadata['service_provider_id'],
+                'car_model_id'        => $metadata['car_model_id'] ? (int)$metadata['car_model_id'] : null,
+                'appointment_time'    => $metadata['appointment_time'],
+                'duration_minutes'    => (int)$metadata['duration_minutes'],
+                'notes'               => $metadata['notes'] ?: null,
+                'final_price'         => (float)$metadata['final_price'],
+                'status'              => 'confirmed',
+                'payment_status'      => 'paid',
+            ]);
+
             $intentId = is_object($session->payment_intent)
                 ? $session->payment_intent->id
                 : $session->payment_intent;
 
-            // Update payment record
-            $booking->payment()->update([
+            // Store payment record
+            Payment::create([
+                'booking_id'            => $booking->id,
+                'stripe_session_id'     => $session->id,
                 'stripe_payment_intent' => $intentId,
+                'amount'                => $booking->final_price,
+                'currency'              => 'pkr',
                 'status'                => 'paid',
-            ]);
-
-            // Confirm booking
-            $booking->update([
-                'status'         => 'confirmed',
-                'payment_status' => 'paid',
             ]);
 
             // Create commission record (10% default)
@@ -110,23 +131,15 @@ class PaymentController extends Controller
     }
 
     /**
-     * Stripe cancel redirect — delete pending booking.
+     * Stripe cancel redirect — no booking was created.
      */
     public function cancel(Request $request)
     {
-        if ($request->has('booking_id')) {
-            $booking = Booking::find($request->booking_id);
-            if ($booking && $booking->user_id === Auth::id() && $booking->status === 'payment_pending') {
-                $booking->payment()->delete();
-                $booking->delete();
-            }
-        }
-
         return redirect()->route('welcome')
             ->with('error', 'Payment was cancelled. Your booking was not confirmed.');
     }
 
     // Old method compatibility
-    public function checkout(Request $request) { return $this->checkoutBooking(Booking::find(0)); }
-    public function assignWorker(Booking $booking) {} // no-op, now providers assign workers
+    public function checkout(Request $request) { return $this->checkoutBooking([]); }
+    public function assignWorker(Booking $booking) {} // no-oprs
 }
