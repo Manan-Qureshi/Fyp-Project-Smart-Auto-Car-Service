@@ -34,7 +34,6 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Keep 'user' alias for backward compatibility
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

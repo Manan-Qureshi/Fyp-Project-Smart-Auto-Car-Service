@@ -137,13 +137,9 @@ class BookingController extends Controller
         // Clear cart
         session()->forget('cart_provider_' . $request->service_provider_id);
 
-        // Redirect to Stripe payment
         return app(PaymentController::class)->checkoutBooking($bookingData);
     }
 
-    /**
-     * Update booking status (provider/worker).
-     */
     public function updateStatus(Request $request, Booking $booking)
     {
         $request->validate([
@@ -152,19 +148,13 @@ class BookingController extends Controller
 
         $user = auth()->user();
 
-        // ── Worker scope ──────────────────────────────────────────────────────
         if ($user->role === 'worker') {
-
-            // Find the Worker record linked to this user
             $worker = \App\Models\Worker::where('user_id', $user->id)->firstOrFail();
-
-            // The booking must be assigned to this worker
             abort_unless($booking->provider_worker_id === $worker->id, 403);
 
             $newStatus = $request->status;
             $current   = $booking->status;
 
-            // Only allow: assigned → in_progress → completed
             $allowed = [
                 'assigned'    => 'in_progress',
                 'in_progress' => 'completed',
@@ -174,7 +164,6 @@ class BookingController extends Controller
                 return back()->with('error', 'Invalid status transition. Allowed: Assigned → In-Progress → Completed only.');
             }
 
-            // First-Come-First-Served: block if an EARLIER booking is still in 'assigned'
             if ($current === 'assigned' && $newStatus === 'in_progress') {
                 $blockedByEarlier = Booking::where('provider_worker_id', $worker->id)
                     ->where('status', 'assigned')
@@ -202,7 +191,6 @@ class BookingController extends Controller
             return back()->with('success', 'Booking status updated to ' . ucfirst(str_replace('_', ' ', $newStatus)) . '.');
         }
 
-        // ── Provider scope ───────────────────────────────────────────────────
         if ($user->role === 'provider') {
             $sp = $user->serviceProvider;
             abort_unless($sp && $booking->service_provider_id === $sp->id, 403);
@@ -213,9 +201,6 @@ class BookingController extends Controller
         return back()->with('success', 'Booking status updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');
     }
 
-    /**
-     * Customer cancels booking.
-     */
     public function cancel(Request $request, Booking $booking)
     {
         abort_unless($booking->user_id === Auth::id(), 403);
@@ -230,7 +215,6 @@ class BookingController extends Controller
 
         $payment = $booking->payment;
 
-        // Stripe refund if paid
         if ($payment && $payment->status === 'paid' && $payment->stripe_payment_intent) {
             try {
                 \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
@@ -259,9 +243,6 @@ class BookingController extends Controller
         return back()->with('success', 'Booking cancelled. Refund initiated if applicable.');
     }
 
-    /**
-     * Show booking confirmation page (post-payment).
-     */
     public function confirmation(Booking $booking)
     {
         abort_unless($booking->user_id === Auth::id(), 403);
@@ -269,7 +250,6 @@ class BookingController extends Controller
         return view('bookings.confirmation', compact('booking'));
     }
 
-    // Keep newService for compatibility
     public function newService()
     {
         session()->forget(['cart', 'selected_car_model']);

@@ -44,7 +44,6 @@ class WorkerController extends Controller
             'password'         => 'required|string|min:6|confirmed',
         ]);
 
-        // 1. Create a User record so the worker can log in via the standard auth
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
@@ -55,7 +54,6 @@ class WorkerController extends Controller
             'cnic'     => $data['cnic'],
         ]);
 
-        // 2. Create the worker row linked to the user
         $provider->workers()->create([
             'user_id'          => $user->id,
             'name'             => $data['name'],
@@ -93,7 +91,6 @@ class WorkerController extends Controller
             'password'         => 'nullable|string|min:6|confirmed',
         ]);
 
-        // Update worker row
         $workerUpdate = [
             'name'             => $data['name'],
             'cnic'             => $data['cnic'],
@@ -109,7 +106,6 @@ class WorkerController extends Controller
 
         $worker->update($workerUpdate);
 
-        // Sync the linked User record
         if ($worker->user_id) {
             $userUpdate = [
                 'name'         => $data['name'],
@@ -140,7 +136,6 @@ class WorkerController extends Controller
             return back()->with('error', 'An assigned worker cannot be deleted.');
         }
 
-        // Delete the linked user account so they can no longer log in
         if ($worker->user_id) {
             User::where('id', $worker->user_id)->delete();
         }
@@ -149,7 +144,6 @@ class WorkerController extends Controller
         return redirect()->route('provider.workers.index')->with('success', 'Worker removed.');
     }
 
-    // Keep for API compatibility
     public function getAvailableWorkers(Request $request)
     {
         $provider = Auth::user()->serviceProvider;

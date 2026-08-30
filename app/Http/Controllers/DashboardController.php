@@ -85,7 +85,6 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Find the Worker row that was created for this user account
         $worker = \App\Models\Worker::where('user_id', $user->id)->first();
 
         if (!$worker) {
@@ -95,14 +94,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Load all bookings assigned to this worker, oldest first (FCFS)
         $assignedBookings = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
             ->where('provider_worker_id', $worker->id)
             ->whereIn('status', ['assigned', 'in_progress', 'completed'])
             ->orderBy('appointment_time', 'asc')
             ->get();
 
-        // The FIRST booking that is not yet completed is the only one the worker can act on
         $firstActionable = $assignedBookings->first(fn($b) => in_array($b->status, ['assigned', 'in_progress']));
 
         if (request()->ajax()) {
@@ -122,7 +119,6 @@ class DashboardController extends Controller
             ->latest()
             ->get();
 
-        // Last provider the customer booked with — used for "Book New Service" shortcut
         $lastProvider = $bookings
             ->whereNotNull('service_provider_id')
             ->first()
@@ -135,9 +131,6 @@ class DashboardController extends Controller
         return view('customer.dashboard', compact('bookings', 'lastProvider'));
     }
 
-    /**
-     * AJAX: Return the current user's latest unread database notifications.
-     */
     public function fetchNotifications()
     {
         $user = Auth::user();
@@ -157,9 +150,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    /**
-     * AJAX: Mark all notifications as read.
-     */
     public function markNotificationsRead()
     {
         Auth::user()->unreadNotifications()->update(['read_at' => now()]);

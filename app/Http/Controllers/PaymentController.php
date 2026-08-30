@@ -12,9 +12,6 @@ use Stripe\Checkout\Session;
 
 class PaymentController extends Controller
 {
-    /**
-     * Create a Stripe Checkout session for a booking.
-     */
     public function checkoutBooking(array $bookingData)
     {
         if ($bookingData['user_id'] !== Auth::id()) abort(403);
@@ -26,7 +23,6 @@ class PaymentController extends Controller
         $carModel = $bookingData['car_model_id'] ? \App\Models\CarModel::find($bookingData['car_model_id']) : null;
         $carLabel = $carModel ? ' (' . $carModel->name . ')' : '';
 
-        // Stripe metadata values must be strings
         $metadata = [
             'user_id'             => (string)$bookingData['user_id'],
             'service_id'          => (string)$bookingData['service_id'],
@@ -61,9 +57,6 @@ class PaymentController extends Controller
         return redirect($session->url);
     }
 
-    /**
-     * Stripe success redirect.
-     */
     public function success(Request $request)
     {
         $stripe  = new \Stripe\StripeClient(env('STRIPE_SECRET'));
@@ -72,7 +65,6 @@ class PaymentController extends Controller
         if ($session->payment_status === 'paid') {
             $metadata = $session->metadata->toArray();
 
-            // Create Booking in database now
             $booking = Booking::create([
                 'user_id'             => (int)$metadata['user_id'],
                 'service_id'          => (int)$metadata['service_id'],
@@ -91,7 +83,6 @@ class PaymentController extends Controller
                 ? $session->payment_intent->id
                 : $session->payment_intent;
 
-            // Store payment record
             Payment::create([
                 'booking_id'            => $booking->id,
                 'stripe_session_id'     => $session->id,
@@ -101,7 +92,6 @@ class PaymentController extends Controller
                 'status'                => 'paid',
             ]);
 
-            // Create commission record (10% default)
             $rate       = 10.00;
             $commission = round($booking->final_price * $rate / 100, 2);
             Commission::create([
@@ -115,7 +105,6 @@ class PaymentController extends Controller
 
             session()->forget(['cart', 'selected_car_model']);
 
-            // Notify the provider of the new booking
             if ($booking->serviceProvider && $booking->serviceProvider->user) {
                 $booking->serviceProvider->user->notify(
                     new \App\Notifications\ServiceStatusUpdated($booking, 'booking_received')
@@ -130,16 +119,12 @@ class PaymentController extends Controller
             ->with('error', 'Payment verification failed. Please contact support.');
     }
 
-    /**
-     * Stripe cancel redirect — no booking was created.
-     */
     public function cancel(Request $request)
     {
         return redirect()->route('welcome')
             ->with('error', 'Payment was cancelled. Your booking was not confirmed.');
     }
 
-    // Old method compatibility
     public function checkout(Request $request) { return $this->checkoutBooking([]); }
-    public function assignWorker(Booking $booking) {} // no-oprs
+    public function assignWorker(Booking $booking) {}
 }
