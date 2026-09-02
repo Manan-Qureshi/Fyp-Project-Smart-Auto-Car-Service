@@ -18,7 +18,7 @@ Route::get('/api/cart/get', [App\Http\Controllers\CartController::class, 'get'])
 Auth::routes();
 
 Route::get('auth/google', [App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('auth/google/callback', [App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback']);
+Route::get('auth/google/callback', [App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
 
 Route::get('/services', [App\Http\Controllers\ServiceController::class, 'publicServices'])->name('services.index');
 
