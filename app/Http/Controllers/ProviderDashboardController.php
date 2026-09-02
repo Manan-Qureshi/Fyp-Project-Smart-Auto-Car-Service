@@ -23,7 +23,6 @@ class ProviderDashboardController extends Controller
     {
         $provider = $this->getProvider();
 
-        // Account exists but admin hasn't set up the provider profile yet
         if (! $provider) {
             return view('provider.pending');
         }
@@ -34,7 +33,6 @@ class ProviderDashboardController extends Controller
 
         $filtered = (bool) $filterDate;
 
-        // Base query for overall provider stats (excluding payment_pending)
         $allBookings = Booking::where('service_provider_id', $provider->id)
             ->where('status', '!=', 'payment_pending')
             ->get();
@@ -46,7 +44,6 @@ class ProviderDashboardController extends Controller
             'completed' => $allBookings->where('status', 'completed')->count(),
         ];
 
-        // Fetch bookings for table view (excluding payment_pending)
         $baseQuery = Booking::with(['user', 'service', 'carModel', 'worker'])
             ->where('service_provider_id', $provider->id)
             ->where('status', '!=', 'payment_pending')
@@ -86,7 +83,6 @@ class ProviderDashboardController extends Controller
             ->where('service_provider_id', $provider->id)
             ->firstOrFail();
 
-        // Validation for today assignment only
         $appointmentDate = \Carbon\Carbon::parse($booking->appointment_time)->toDateString();
         $today = now()->toDateString();
         if ($appointmentDate > $today) {

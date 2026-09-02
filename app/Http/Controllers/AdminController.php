@@ -19,8 +19,6 @@ class AdminController extends Controller
         });
     }
 
-    // --- Provider Management ---
-
     public function providers()
     {
         $providers = ServiceProvider::with('owner')->withCount(['bookings', 'workers'])->latest()->paginate(15);
@@ -53,7 +51,6 @@ class AdminController extends Controller
             'close_time'        => 'required',
         ]);
 
-        // Create the user account for provider
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
@@ -128,8 +125,6 @@ class AdminController extends Controller
         $provider->delete();
         return redirect()->route('admin.providers.index')->with('success', 'Provider removed.');
     }
-
-    // --- Financial Reports ---
 
     public function financial()
     {
