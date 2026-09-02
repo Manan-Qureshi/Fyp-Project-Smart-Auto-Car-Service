@@ -36,7 +36,7 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/bootstrap/cache /var/www/html/storage
 
 # Install Composer Dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Permissions & SQLite db setup
 RUN touch /var/www/html/database/database.sqlite \
