@@ -42,6 +42,9 @@
             <a href="{{ '/admin/cars' }}" class="nav-link {{ request()->routeIs('admin/cars*') ? 'active' : '' }}">
                 <i class="fas fa-car"></i> Car Types
             </a>
+            <a href="{{ route('admin.financial') }}" class="nav-link {{ request()->routeIs('admin.financial') ? 'active' : '' }}">
+                <i class="fas fa-chart-line"></i> Payments & Commission
+            </a>
         @endif
 
         {{-- PROVIDER --}}
@@ -242,7 +245,7 @@
     }
 
     loadNotifications();
-    setInterval(loadNotifications, 30000); // Poll every 30 seconds
+    setInterval(loadNotifications, 10000); // Poll every 10 seconds
 })();
 </script>
 @endauth

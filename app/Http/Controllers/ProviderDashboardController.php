@@ -66,7 +66,15 @@ class ProviderDashboardController extends Controller
         $workers = $provider->workers()->get();
 
         if (request()->ajax()) {
-            return response()->json(['html' => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render()]);
+            return response()->json([
+                'html'  => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render(),
+                'stats' => [
+                    'total'     => number_format($stats['total']),
+                    'pending'   => number_format($stats['pending']),
+                    'active'    => number_format($stats['active']),
+                    'completed' => number_format($stats['completed']),
+                ],
+            ]);
         }
 
         return view('provider.dashboard', compact('provider', 'bookings', 'workers', 'stats', 'filterDate', 'filtered', 'bookingTotal', 'showAll'));
@@ -97,6 +105,9 @@ class ProviderDashboardController extends Controller
         if ($booking->user) {
             $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'assigned'));
         }
+        if ($worker && $worker->user) {
+            $worker->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'assigned_to_worker'));
+        }
 
         return back()->with('success', 'Worker "' . $worker->name . '" assigned to booking.');
     }
@@ -109,6 +120,20 @@ class ProviderDashboardController extends Controller
         $request->validate(['status' => 'required|in:accepted,assigned,in_progress,completed,cancelled']);
 
         $booking->update(['status' => $request->status]);
+
+        if ($request->status === 'completed' && $booking->user) {
+            $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
+        } elseif ($request->status === 'cancelled') {
+            if ($booking->user) {
+                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_provider'));
+            }
+            if ($booking->provider_worker_id) {
+                $w = Worker::find($booking->provider_worker_id);
+                if ($w && $w->user) {
+                    $w->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_provider'));
+                }
+            }
+        }
 
         return back()->with('success', 'Booking updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');
     }

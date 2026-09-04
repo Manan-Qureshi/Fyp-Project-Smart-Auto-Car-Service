@@ -177,8 +177,13 @@ class BookingController extends Controller
 
             $booking->update(['status' => $newStatus]);
             
-            if ($newStatus === 'in_progress' && $booking->user) {
-                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'started'));
+            if ($newStatus === 'in_progress') {
+                if ($booking->user) {
+                    $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'started'));
+                }
+                if ($booking->serviceProvider && $booking->serviceProvider->user) {
+                    $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'worker_started'));
+                }
             } elseif ($newStatus === 'completed') {
                 if ($booking->user) {
                     $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));

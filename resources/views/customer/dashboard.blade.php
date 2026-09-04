@@ -22,6 +22,8 @@
         @endif
     </div>
 
+
+
         <div class="glass-card p-4 rounded-4 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -102,7 +104,7 @@
         .then(r=>r.json())
         .then(d=>{if(d.html) document.getElementById('bookings-tbody').innerHTML=d.html;})
         .catch(e=>console.error('Polling error', e));
-    }, 10000); // 10 seconds
+    }, 5000);
 </script>
 @endpush
 @endsection

@@ -72,7 +72,15 @@ class DashboardController extends Controller
         }
 
         if (request()->ajax()) {
-            return response()->json(['html' => view('admin.partials.bookings_table_body', compact('bookings'))->render()]);
+            return response()->json([
+                'html'  => view('admin.partials.bookings_table_body', compact('bookings'))->render(),
+                'stats' => [
+                    'providers'     => number_format($providers->count()),
+                    'totalBookings' => number_format($totalBookings),
+                    'totalRevenue'  => 'PKR ' . number_format($totalRevenue),
+                    'totalEarning'  => 'PKR ' . number_format($totalEarning),
+                ]
+            ]);
         }
 
         return view('admin.dashboard', compact(
@@ -88,9 +96,17 @@ class DashboardController extends Controller
         $worker = \App\Models\Worker::where('user_id', $user->id)->first();
 
         if (!$worker) {
+            $stats = ['total' => '0', 'assigned' => '0', 'active' => '0', 'completed' => '0'];
+            if (request()->ajax()) {
+                return response()->json([
+                    'html'  => view('worker.partials.bookings_table_body', ['assignedBookings' => collect(), 'firstActionableId' => null])->render(),
+                    'stats' => $stats,
+                ]);
+            }
             return view('worker.dashboard', [
-                'assignedBookings' => collect(),
+                'assignedBookings'  => collect(),
                 'firstActionableId' => null,
+                'stats'             => $stats,
             ]);
         }
 
@@ -101,14 +117,26 @@ class DashboardController extends Controller
             ->get();
 
         $firstActionable = $assignedBookings->first(fn($b) => in_array($b->status, ['assigned', 'in_progress']));
+        $firstActionableId = $firstActionable?->id;
+
+        $stats = [
+            'total'     => number_format($assignedBookings->count()),
+            'assigned'  => number_format($assignedBookings->where('status', 'assigned')->count()),
+            'active'    => number_format($assignedBookings->where('status', 'in_progress')->count()),
+            'completed' => number_format($assignedBookings->where('status', 'completed')->count()),
+        ];
 
         if (request()->ajax()) {
-            return response()->json(['html' => view('worker.partials.bookings_table_body', compact('assignedBookings', 'firstActionableId'))->render()]);
+            return response()->json([
+                'html'  => view('worker.partials.bookings_table_body', compact('assignedBookings', 'firstActionableId'))->render(),
+                'stats' => $stats,
+            ]);
         }
 
         return view('worker.dashboard', [
-            'assignedBookings'   => $assignedBookings,
-            'firstActionableId'  => $firstActionable?->id,
+            'assignedBookings'  => $assignedBookings,
+            'firstActionableId' => $firstActionableId,
+            'stats'             => $stats,
         ]);
     }
 
@@ -124,11 +152,21 @@ class DashboardController extends Controller
             ->first()
             ?->serviceProvider;
 
+        $stats = [
+            'total'     => number_format($bookings->count()),
+            'active'    => number_format($bookings->whereIn('status', ['confirmed', 'accepted', 'assigned', 'in_progress'])->count()),
+            'completed' => number_format($bookings->where('status', 'completed')->count()),
+            'cancelled' => number_format($bookings->where('status', 'cancelled')->count()),
+        ];
+
         if (request()->ajax()) {
-            return response()->json(['html' => view('customer.partials.bookings_table_body', compact('bookings'))->render()]);
+            return response()->json([
+                'html'  => view('customer.partials.bookings_table_body', compact('bookings'))->render(),
+                'stats' => $stats,
+            ]);
         }
 
-        return view('customer.dashboard', compact('bookings', 'lastProvider'));
+        return view('customer.dashboard', compact('bookings', 'lastProvider', 'stats'));
     }
 
     public function fetchNotifications()

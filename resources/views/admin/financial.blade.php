@@ -8,21 +8,21 @@
         <div class="col-md-4">
             <div class="glass-card p-4 rounded-4 text-center">
                 <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                <div class="fs-2 fw-bold">{{ $totalBookings }}</div>
+                <div class="fs-2 fw-bold" id="stat-completed-bookings">{{ number_format($totalBookings) }}</div>
                 <div class="text-muted">Completed Bookings</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="glass-card p-4 rounded-4 text-center">
                 <i class="fas fa-hand-holding-usd fa-2x text-primary mb-2"></i>
-                <div class="fs-2 fw-bold">PKR {{ number_format($totalRevenue) }}</div>
+                <div class="fs-2 fw-bold" id="stat-total-revenue">PKR {{ number_format($totalRevenue) }}</div>
                 <div class="text-muted">Platform Commission (10%)</div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="glass-card p-4 rounded-4 text-center">
                 <i class="fas fa-store fa-2x text-warning mb-2"></i>
-                <div class="fs-2 fw-bold">PKR {{ number_format($totalEarnings) }}</div>
+                <div class="fs-2 fw-bold" id="stat-total-earnings">PKR {{ number_format($totalEarnings) }}</div>
                 <div class="text-muted">Provider Earnings</div>
             </div>
         </div>
@@ -56,4 +56,23 @@
         {{ $commissions->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+    setInterval(function(){
+        fetch(window.location.href, {
+            headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}
+        })
+        .then(r=>r.json())
+        .then(d=>{
+            if(d.stats){
+                if(d.stats.totalBookings !== undefined) document.getElementById('stat-completed-bookings').innerText = d.stats.totalBookings;
+                if(d.stats.totalRevenue !== undefined) document.getElementById('stat-total-revenue').innerText = d.stats.totalRevenue;
+                if(d.stats.totalEarnings !== undefined) document.getElementById('stat-total-earnings').innerText = d.stats.totalEarnings;
+            }
+        })
+        .catch(e=>console.error('Polling error', e));
+    }, 5000);
+</script>
+@endpush
 @endsection

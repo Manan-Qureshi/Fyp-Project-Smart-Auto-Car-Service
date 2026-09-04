@@ -133,6 +133,16 @@ class AdminController extends Controller
         $totalEarnings  = Commission::sum('provider_earning');
         $totalBookings  = Booking::where('status', 'completed')->count();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'stats' => [
+                    'totalBookings' => number_format($totalBookings),
+                    'totalRevenue'  => 'PKR ' . number_format($totalRevenue),
+                    'totalEarnings' => 'PKR ' . number_format($totalEarnings),
+                ]
+            ]);
+        }
+
         return view('admin.financial', compact('commissions', 'totalRevenue', 'totalEarnings', 'totalBookings'));
     }
 }
