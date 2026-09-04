@@ -11,16 +11,21 @@ use App\Models\ServiceCategory;
 
 class ServiceController extends Controller
 {
-    // -------------------------------------------------------
-    // Admin CRUD for global service catalog
-    // -------------------------------------------------------
     public function index()
     {
-        $services = Service::orderBy('name')->get();
-        $editService = request('edit') ? Service::find(request('edit')) : null;
-        $durations = TimeDuration::ordered();
-        $editDuration = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
-        $serviceCategories = ServiceCategory::orderBy('name')->get();
+        try {
+            $services = Service::orderBy('name')->get();
+            $editService = request('edit') ? Service::find(request('edit')) : null;
+            $durations = class_exists(TimeDuration::class) ? TimeDuration::orderBy('minutes')->get() : collect();
+            $editDuration = request('edit_duration') ? TimeDuration::find(request('edit_duration')) : null;
+            $serviceCategories = class_exists(ServiceCategory::class) ? ServiceCategory::orderBy('name')->get() : collect();
+        } catch (\Exception $e) {
+            $services = collect();
+            $editService = null;
+            $durations = collect();
+            $editDuration = null;
+            $serviceCategories = collect();
+        }
 
         return view('admin.services.index', compact('services', 'editService', 'durations', 'editDuration', 'serviceCategories'));
     }
@@ -48,13 +53,18 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        Service::create($validated);
-        return redirect('/admin/services')->with('success', 'Service created successfully.');
+        try {
+            $validated['type'] = 'standard';
+            if (empty($validated['duration_minutes'])) {
+                $validated['duration_minutes'] = 60;
+            }
+            Service::create($validated);
+            return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.services.index')->with('error', 'Could not create service: ' . $e->getMessage());
+        }
     }
 
-    // -------------------------------------------------------
-    // Time Duration CRUD
-    // -------------------------------------------------------
     public function storeDuration(Request $request)
     {
         $data = $request->validate([
@@ -71,9 +81,6 @@ class ServiceController extends Controller
         return redirect('/admin/services')->with('success', 'Duration removed.');
     }
 
-    // -------------------------------------------------------
-    // Service Category CRUD
-    // -------------------------------------------------------
     public function storeCategory(Request $request)
     {
         $data = $request->validate([
@@ -91,7 +98,6 @@ class ServiceController extends Controller
 
     public function edit(Service $service)
     {
-        // Editing is done inline on the index page via ?edit=id
         return redirect('/admin/services?edit=' . $service->id);
     }
 
@@ -115,13 +121,13 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
+        $validated['type'] = 'standard';
         $service->update($validated);
-        return redirect('/admin/services')->with('success', 'Service updated successfully.');
+        return redirect()->route('admin.services.index')->with('success', 'Service updated successfully.');
     }
 
     public function destroy(Service $service)
     {
-        // Block deletion if there are any active (non-completed, non-cancelled) bookings
         $activeBookings = $service->bookings()
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->exists();
@@ -130,14 +136,10 @@ class ServiceController extends Controller
             return back()->with('error', 'A booked service cannot be deleted.');
         }
 
-        // Safe to delete — all bookings are completed or cancelled (or none at all)
         $service->delete();
         return back()->with('success', 'Service deleted successfully.');
     }
 
-    // -------------------------------------------------------
-    // Public page — services list (browse without provider context)
-    // -------------------------------------------------------
     public function publicServices(Request $request)
     {
         $selectedCar = session('selected_car_model');
@@ -160,9 +162,6 @@ class ServiceController extends Controller
         return view('services.index', compact('services', 'allCarTypes', 'selectedCar'));
     }
 
-    // -------------------------------------------------------
-    // Car selection (kept from original)
-    // -------------------------------------------------------
     public function selectCar(Request $request)
     {
         $request->validate(['car_model_id' => 'required|exists:car_models,id']);
@@ -186,9 +185,6 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Car selected: ' . $carModel->name)->withCookie($cookie);
     }
 
-    // -------------------------------------------------------
-    // API helpers (kept for price calculation)
-    // -------------------------------------------------------
     public function getCarModels(Request $request)
     {
         if ($request->has('car_type_id')) {
@@ -215,7 +211,6 @@ class ServiceController extends Controller
         ]);
     }
 
-    // Backward compat alias
     public function publicIndex(Request $request)
     {
         return $this->index();

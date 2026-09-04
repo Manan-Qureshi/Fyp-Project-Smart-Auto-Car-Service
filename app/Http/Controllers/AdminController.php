@@ -19,8 +19,6 @@ class AdminController extends Controller
         });
     }
 
-    // --- Provider Management ---
-
     public function providers()
     {
         $providers = ServiceProvider::with('owner')->withCount(['bookings', 'workers'])->latest()->paginate(15);
@@ -53,7 +51,6 @@ class AdminController extends Controller
             'close_time'        => 'required',
         ]);
 
-        // Create the user account for provider
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
@@ -129,14 +126,22 @@ class AdminController extends Controller
         return redirect()->route('admin.providers.index')->with('success', 'Provider removed.');
     }
 
-    // --- Financial Reports ---
-
     public function financial()
     {
         $commissions    = Commission::with(['booking.service', 'serviceProvider'])->latest()->paginate(20);
         $totalRevenue   = Commission::sum('commission_amount');
         $totalEarnings  = Commission::sum('provider_earning');
         $totalBookings  = Booking::where('status', 'completed')->count();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'stats' => [
+                    'totalBookings' => number_format($totalBookings),
+                    'totalRevenue'  => 'PKR ' . number_format($totalRevenue),
+                    'totalEarnings' => 'PKR ' . number_format($totalEarnings),
+                ]
+            ]);
+        }
 
         return view('admin.financial', compact('commissions', 'totalRevenue', 'totalEarnings', 'totalBookings'));
     }

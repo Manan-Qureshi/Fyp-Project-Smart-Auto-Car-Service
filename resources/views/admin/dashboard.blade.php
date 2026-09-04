@@ -8,30 +8,34 @@
             <div class="col-6 col-md-3">
                 <div class="glass-card p-3 rounded-4 text-center">
                     <i class="fas fa-store fa-2x text-primary mb-2"></i>
-                    <div class="fs-3 fw-bold">{{ $providers->count() }}</div>
+                    <div class="fs-3 fw-bold" id="stat-providers">{{ number_format($providers->count()) }}</div>
                     <div class="text-muted small">Providers</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="glass-card p-3 rounded-4 text-center">
                     <i class="fas fa-calendar-check fa-2x text-success mb-2"></i>
-                    <div class="fs-3 fw-bold">{{ $totalBookings }}</div>
+                    <div class="fs-3 fw-bold" id="stat-total-bookings">{{ number_format($totalBookings) }}</div>
                     <div class="text-muted small">Total Bookings</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="glass-card p-3 rounded-4 text-center">
-                    <i class="fas fa-money-bill-wave fa-2x text-info mb-2"></i>
-                    <div class="fs-3 fw-bold">PKR {{ number_format($totalRevenue) }}</div>
-                    <div class="text-muted small">Commission Earned</div>
-                </div>
+                <a href="{{ route('admin.financial') }}" class="text-decoration-none">
+                    <div class="glass-card p-3 rounded-4 text-center">
+                        <i class="fas fa-money-bill-wave fa-2x text-info mb-2"></i>
+                        <div class="fs-3 fw-bold text-dark" id="stat-total-revenue">PKR {{ number_format($totalRevenue) }}</div>
+                        <div class="text-muted small">Commission Earned <i class="fas fa-arrow-right ms-1 text-primary"></i></div>
+                    </div>
+                </a>
             </div>
             <div class="col-6 col-md-3">
-                <div class="glass-card p-3 rounded-4 text-center">
-                    <i class="fas fa-handshake fa-2x text-warning mb-2"></i>
-                    <div class="fs-3 fw-bold">PKR {{ number_format($totalEarning) }}</div>
-                    <div class="text-muted small">Provider Earnings</div>
-                </div>
+                <a href="{{ route('admin.financial') }}" class="text-decoration-none">
+                    <div class="glass-card p-3 rounded-4 text-center">
+                        <i class="fas fa-handshake fa-2x text-warning mb-2"></i>
+                        <div class="fs-3 fw-bold text-dark" id="stat-total-earning">PKR {{ number_format($totalEarning) }}</div>
+                        <div class="text-muted small">Provider Earnings <i class="fas fa-arrow-right ms-1 text-primary"></i></div>
+                    </div>
+                </a>
             </div>
         </div>
 
@@ -141,9 +145,17 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                 })
                     .then(r => r.json())
-                    .then(d => { if (d.html) document.getElementById('bookings-tbody').innerHTML = d.html; })
+                    .then(d => {
+                        if (d.html) document.getElementById('bookings-tbody').innerHTML = d.html;
+                        if (d.stats) {
+                            if (d.stats.providers !== undefined) document.getElementById('stat-providers').innerText = d.stats.providers;
+                            if (d.stats.totalBookings !== undefined) document.getElementById('stat-total-bookings').innerText = d.stats.totalBookings;
+                            if (d.stats.totalRevenue !== undefined) document.getElementById('stat-total-revenue').innerText = d.stats.totalRevenue;
+                            if (d.stats.totalEarning !== undefined) document.getElementById('stat-total-earning').innerText = d.stats.totalEarning;
+                        }
+                    })
                     .catch(e => console.error('Polling error', e));
-            }, 10000); // 10 seconds
+            }, 5000);
         </script>
     @endpush
 @endsection

@@ -71,6 +71,27 @@ class ServiceStatusUpdated extends Notification
                 'icon'    => 'fa-calendar-plus',
                 'color'   => 'primary',
             ],
+            'assigned_to_worker' => [
+                'title'   => 'New Task Assigned',
+                'message' => "You have been assigned to service \"$serviceName\" scheduled on $bookingDate.",
+                'booking_id' => $this->booking->id,
+                'icon'    => 'fa-hard-hat',
+                'color'   => 'warning',
+            ],
+            'worker_started' => [
+                'title'   => 'Worker Started Service',
+                'message' => "Worker has started service \"$serviceName\" for booking #" . $this->booking->id . ".",
+                'booking_id' => $this->booking->id,
+                'icon'    => 'fa-play-circle',
+                'color'   => 'info',
+            ],
+            'cancelled_by_provider' => [
+                'title'   => 'Booking Cancelled',
+                'message' => "The booking for \"$serviceName\" on $bookingDate was cancelled by provider.",
+                'booking_id' => $this->booking->id,
+                'icon'    => 'fa-times-circle',
+                'color'   => 'danger',
+            ],
             default => [
                 'title'   => 'Booking Update',
                 'message' => "Your booking #" . $this->booking->id . " has been updated.",

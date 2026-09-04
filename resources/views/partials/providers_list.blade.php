@@ -67,10 +67,21 @@
                         @endif
                     </div>
                     <div class="sacs-card__footer">
-                        <a href="{{ route('providers.show', $provider) }}"
-                            class="sacs-card__btn {{ $isNearest ? 'sacs-card__btn--nearest' : '' }}">
-                            <i class="fas fa-eye me-2"></i> View Services &amp; Book
-                        </a>
+                        @if(Auth::check() && Auth::user()->isAdmin())
+                            <div class="d-flex gap-2 w-100">
+                                <a href="{{ route('admin.providers.edit', $provider) }}" class="btn btn-sm btn-outline-warning flex-fill rounded-pill">
+                                    <i class="fas fa-edit me-1"></i> Edit Provider
+                                </a>
+                                <a href="{{ route('providers.show', $provider) }}" class="btn btn-sm btn-outline-primary flex-fill rounded-pill">
+                                    <i class="fas fa-eye me-1"></i> View Services
+                                </a>
+                            </div>
+                        @else
+                            <a href="{{ route('providers.show', $provider) }}"
+                                class="sacs-card__btn {{ $isNearest ? 'sacs-card__btn--nearest' : '' }}">
+                                <i class="fas fa-eye me-2"></i> View Services &amp; Book
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

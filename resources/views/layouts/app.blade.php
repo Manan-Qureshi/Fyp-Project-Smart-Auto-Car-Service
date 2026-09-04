@@ -36,11 +36,14 @@
             <a href="{{ '/admin/providers' }}" class="nav-link {{ request()->routeIs('admin/providers*') ? 'active' : '' }}">
                 <i class="fas fa-store"></i> Service Providers
             </a>
-            <a href="{{ '/admin/services' }}" class="nav-link {{ request()->routeIs('admin/services*') ? 'active' : '' }}">
+            <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
                 <i class="fas fa-concierge-bell"></i> Services
             </a>
             <a href="{{ '/admin/cars' }}" class="nav-link {{ request()->routeIs('admin/cars*') ? 'active' : '' }}">
                 <i class="fas fa-car"></i> Car Types
+            </a>
+            <a href="{{ route('admin.financial') }}" class="nav-link {{ request()->routeIs('admin.financial') ? 'active' : '' }}">
+                <i class="fas fa-chart-line"></i> Payments & Commission
             </a>
         @endif
 
@@ -242,7 +245,7 @@
     }
 
     loadNotifications();
-    setInterval(loadNotifications, 30000); // Poll every 30 seconds
+    setInterval(loadNotifications, 10000); // Poll every 10 seconds
 })();
 </script>
 @endauth

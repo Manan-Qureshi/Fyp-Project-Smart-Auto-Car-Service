@@ -11,7 +11,11 @@ class AdminCarController extends Controller
 {
     public function index()
     {
-        $types = CarType::with('models')->get();
+        try {
+            $types = CarType::with('models')->get();
+        } catch (\Exception $e) {
+            $types = collect();
+        }
         return view('admin.cars.index', compact('types'));
     }
 

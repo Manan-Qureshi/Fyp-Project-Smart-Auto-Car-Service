@@ -12,15 +12,15 @@
     {{-- Stats --}}
     <div class="row g-3 mb-4">
         @foreach([
-            ['label'=>'Total Bookings',      'val'=>$stats['total'],     'icon'=>'calendar-alt', 'color'=>'primary'],
-            ['label'=>'Pending Confirmation', 'val'=>$stats['pending'],   'icon'=>'clock',        'color'=>'warning'],
-            ['label'=>'In Progress',          'val'=>$stats['active'],    'icon'=>'spinner',      'color'=>'info'],
-            ['label'=>'Completed',            'val'=>$stats['completed'], 'icon'=>'check-circle', 'color'=>'success'],
+            ['key'=>'total',     'label'=>'Total Bookings',       'val'=>$stats['total'],     'icon'=>'calendar-alt', 'color'=>'primary'],
+            ['key'=>'pending',   'label'=>'Pending Confirmation', 'val'=>$stats['pending'],   'icon'=>'clock',        'color'=>'warning'],
+            ['key'=>'active',    'label'=>'In Progress',          'val'=>$stats['active'],    'icon'=>'spinner',      'color'=>'info'],
+            ['key'=>'completed', 'label'=>'Completed',            'val'=>$stats['completed'], 'icon'=>'check-circle', 'color'=>'success'],
         ] as $s)
         <div class="col-6 col-md-3">
             <div class="glass-card p-3 rounded-4 text-center">
                 <i class="fas fa-{{ $s['icon'] }} fa-2x text-{{ $s['color'] }} mb-2"></i>
-                <div class="fs-3 fw-bold">{{ $s['val'] }}</div>
+                <div class="fs-3 fw-bold" id="stat-{{ $s['key'] }}">{{ number_format($s['val']) }}</div>
                 <div class="text-muted small">{{ $s['label'] }}</div>
             </div>
         </div>
@@ -109,14 +109,31 @@
 @push('scripts')
 <script>
     setInterval(function(){
+        const tbody = document.getElementById('bookings-tbody');
+        if (!tbody) return;
+
+        const hasOpenCollapse = tbody.querySelector('.collapse.show') !== null;
+        const isUserInteracting = tbody.contains(document.activeElement);
+
         fetch(window.location.href, {
             headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}
         })
         .then(r=>r.json())
-        .then(d=>{if(d.html) document.getElementById('bookings-tbody').innerHTML=d.html;})
+        .then(d=>{
+            if(d.html && !hasOpenCollapse && !isUserInteracting){
+                tbody.innerHTML = d.html;
+            }
+            if(d.stats){
+                if(d.stats.total !== undefined) document.getElementById('stat-total').innerText = d.stats.total;
+                if(d.stats.pending !== undefined) document.getElementById('stat-pending').innerText = d.stats.pending;
+                if(d.stats.active !== undefined) document.getElementById('stat-active').innerText = d.stats.active;
+                if(d.stats.completed !== undefined) document.getElementById('stat-completed').innerText = d.stats.completed;
+            }
+        })
         .catch(e=>console.error('Polling error', e));
-    }, 10000); // 10 seconds
+    }, 5000);
 </script>
+
 @endpush
 @endsection
 

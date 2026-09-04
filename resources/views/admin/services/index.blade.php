@@ -115,10 +115,10 @@
                 </h5>
 
                 @if(isset($editService))
-                    <form method="POST" action="/admin/services/{{ $editService->id }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('admin.services.update', $editService) }}" enctype="multipart/form-data">
                         @method('PUT')
                 @else
-                    <form method="POST" action="/admin/services" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('admin.services.store') }}" enctype="multipart/form-data">
                 @endif
                 @csrf
 
@@ -273,7 +273,7 @@
                                        class="btn btn-sm btn-outline-warning rounded-pill">
                                         <i class="fas fa-pen"></i>
                                     </a>
-                                    <form action="/admin/services/{{ $service->id }}" method="POST">
+                                    <form action="{{ route('admin.services.destroy', $service) }}" method="POST">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger rounded-pill">
                                             <i class="fas fa-trash"></i>

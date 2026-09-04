@@ -22,20 +22,17 @@
         @endif
     </div>
 
+
+
         <div class="glass-card p-4 rounded-4 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-3">#</th>
-                            <th>Service</th>
-                            <th>Provider</th>
-                            <th>Car</th>
-                            <th>Appointment</th>
-                            <th>Amount</th>
-                            <th>Payment</th>
-                            <th>Status</th>
-                            <th class="text-end pe-3">Actions</th>
+                            <th class="ps-3">Service ID</th>
+                            <th>Name</th>
+                            <th>Provider Name</th>
+                            <th>Service Time</th>
                         </tr>
                     </thead>
                     <tbody id="bookings-tbody">
@@ -107,7 +104,7 @@
         .then(r=>r.json())
         .then(d=>{if(d.html) document.getElementById('bookings-tbody').innerHTML=d.html;})
         .catch(e=>console.error('Polling error', e));
-    }, 10000); // 10 seconds
+    }, 5000);
 </script>
 @endpush
 @endsection

@@ -29,50 +29,64 @@ class DashboardController extends Controller
     {
         $request = request();
 
-        $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
-        $totalRevenue = Commission::sum('commission_amount');
-        $totalEarning = Commission::sum('provider_earning');
-        $totalBookings = Booking::where('status', '!=', 'payment_pending')->count();
+        try {
+            $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
+            $totalRevenue = Commission::sum('commission_amount') ?? 0;
+            $totalEarning = Commission::sum('provider_earning') ?? 0;
+            $totalBookings = Booking::where('status', '!=', 'payment_pending')->count();
 
-        $filterDate     = $request->get('filter_date');
-        $filterProvider = $request->get('filter_provider');
-        $showAll        = $request->boolean('show_all');
+            $filterDate     = $request->get('filter_date');
+            $filterProvider = $request->get('filter_provider');
+            $showAll        = $request->boolean('show_all');
 
-        $filtered     = $filterDate || $filterProvider;
-        $bookings     = collect();
-        $bookingTotal = 0;
+            $filtered     = $filterDate || $filterProvider;
+            $bookings     = collect();
+            $bookingTotal = 0;
 
-        if ($filtered) {
-            // Build base query with filters
-            $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
-                ->where('status', '!=', 'payment_pending')
-                ->latest();
+            if ($filtered) {
+                $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
+                    ->where('status', '!=', 'payment_pending')
+                    ->latest();
 
-            if ($filterDate) {
-                $baseQuery->whereDate('appointment_time', $filterDate);
+                if ($filterDate) {
+                    $baseQuery->whereDate('appointment_time', $filterDate);
+                }
+                if ($filterProvider) {
+                    $baseQuery->where('service_provider_id', $filterProvider);
+                }
+
+                $bookingTotal = (clone $baseQuery)->count();
+                $bookings = $showAll ? $baseQuery->get() : $baseQuery->limit(10)->get();
+            } else {
+                $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
+                    ->where('status', '!=', 'payment_pending')
+                    ->latest();
+                $bookingTotal = (clone $baseQuery)->count();
+                $bookings = $baseQuery->limit(5)->get();
             }
-            if ($filterProvider) {
-                $baseQuery->where('service_provider_id', $filterProvider);
-            }
-
-            // Count BEFORE applying limit — clone so the builder stays clean
-            $bookingTotal = (clone $baseQuery)->count();
-
-            // Fetch the page
-            $bookings = $showAll
-                ? $baseQuery->get()
-                : $baseQuery->limit(10)->get();
-        } else {
-            // Default view: fetch 5 most recent bookings
-            $baseQuery = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
-                ->where('status', '!=', 'payment_pending')
-                ->latest();
-            $bookingTotal = (clone $baseQuery)->count();
-            $bookings = $baseQuery->limit(5)->get();
+        } catch (\Exception $e) {
+            $providers = collect();
+            $totalRevenue = 0;
+            $totalEarning = 0;
+            $totalBookings = 0;
+            $filterDate = null;
+            $filterProvider = null;
+            $filtered = false;
+            $bookings = collect();
+            $bookingTotal = 0;
+            $showAll = false;
         }
 
         if (request()->ajax()) {
-            return response()->json(['html' => view('admin.partials.bookings_table_body', compact('bookings'))->render()]);
+            return response()->json([
+                'html'  => view('admin.partials.bookings_table_body', compact('bookings'))->render(),
+                'stats' => [
+                    'providers'     => number_format($providers->count()),
+                    'totalBookings' => number_format($totalBookings),
+                    'totalRevenue'  => 'PKR ' . number_format($totalRevenue),
+                    'totalEarning'  => 'PKR ' . number_format($totalEarning),
+                ]
+            ]);
         }
 
         return view('admin.dashboard', compact(
@@ -85,33 +99,50 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Find the Worker row that was created for this user account
         $worker = \App\Models\Worker::where('user_id', $user->id)->first();
 
         if (!$worker) {
+            $stats = ['total' => '0', 'assigned' => '0', 'active' => '0', 'completed' => '0'];
+            if (request()->ajax()) {
+                return response()->json([
+                    'html'  => view('worker.partials.bookings_table_body', ['assignedBookings' => collect(), 'firstActionableId' => null])->render(),
+                    'stats' => $stats,
+                ]);
+            }
             return view('worker.dashboard', [
-                'assignedBookings' => collect(),
+                'assignedBookings'  => collect(),
                 'firstActionableId' => null,
+                'stats'             => $stats,
             ]);
         }
 
-        // Load all bookings assigned to this worker, oldest first (FCFS)
         $assignedBookings = Booking::with(['user', 'service', 'serviceProvider', 'carModel'])
             ->where('provider_worker_id', $worker->id)
             ->whereIn('status', ['assigned', 'in_progress', 'completed'])
             ->orderBy('appointment_time', 'asc')
             ->get();
 
-        // The FIRST booking that is not yet completed is the only one the worker can act on
         $firstActionable = $assignedBookings->first(fn($b) => in_array($b->status, ['assigned', 'in_progress']));
+        $firstActionableId = $firstActionable?->id;
+
+        $stats = [
+            'total'     => number_format($assignedBookings->count()),
+            'assigned'  => number_format($assignedBookings->where('status', 'assigned')->count()),
+            'active'    => number_format($assignedBookings->where('status', 'in_progress')->count()),
+            'completed' => number_format($assignedBookings->where('status', 'completed')->count()),
+        ];
 
         if (request()->ajax()) {
-            return response()->json(['html' => view('worker.partials.bookings_table_body', compact('assignedBookings', 'firstActionableId'))->render()]);
+            return response()->json([
+                'html'  => view('worker.partials.bookings_table_body', compact('assignedBookings', 'firstActionableId'))->render(),
+                'stats' => $stats,
+            ]);
         }
 
         return view('worker.dashboard', [
-            'assignedBookings'   => $assignedBookings,
-            'firstActionableId'  => $firstActionable?->id,
+            'assignedBookings'  => $assignedBookings,
+            'firstActionableId' => $firstActionableId,
+            'stats'             => $stats,
         ]);
     }
 
@@ -123,22 +154,28 @@ class DashboardController extends Controller
             ->latest()
             ->get();
 
-        // Last provider the customer booked with — used for "Book New Service" shortcut
         $lastProvider = $bookings
             ->whereNotNull('service_provider_id')
             ->first()
             ?->serviceProvider;
 
+        $stats = [
+            'total'     => number_format($bookings->count()),
+            'active'    => number_format($bookings->whereIn('status', ['confirmed', 'accepted', 'assigned', 'in_progress'])->count()),
+            'completed' => number_format($bookings->where('status', 'completed')->count()),
+            'cancelled' => number_format($bookings->where('status', 'cancelled')->count()),
+        ];
+
         if (request()->ajax()) {
-            return response()->json(['html' => view('customer.partials.bookings_table_body', compact('bookings'))->render()]);
+            return response()->json([
+                'html'  => view('customer.partials.bookings_table_body', compact('bookings'))->render(),
+                'stats' => $stats,
+            ]);
         }
 
-        return view('customer.dashboard', compact('bookings', 'lastProvider'));
+        return view('customer.dashboard', compact('bookings', 'lastProvider', 'stats'));
     }
 
-    /**
-     * AJAX: Return the current user's latest unread database notifications.
-     */
     public function fetchNotifications()
     {
         $user = Auth::user();
@@ -158,9 +195,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    /**
-     * AJAX: Mark all notifications as read.
-     */
     public function markNotificationsRead()
     {
         Auth::user()->unreadNotifications()->update(['read_at' => now()]);
