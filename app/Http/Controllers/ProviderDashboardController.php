@@ -97,6 +97,11 @@ class ProviderDashboardController extends Controller
             return back()->with('error', 'You cannot assign a worker to a service scheduled for a future date. Assignments can only be made on the day of the service.');
         }
 
+        $availableWorkerIds = $booking->getAvailableWorkers()->pluck('id')->toArray();
+        if (!in_array($worker->id, $availableWorkerIds)) {
+            return back()->with('error', 'Worker "' . $worker->name . '" is already assigned to another service during this time slot.');
+        }
+
         $booking->update([
             'provider_worker_id' => $worker->id,
             'status'             => 'assigned',

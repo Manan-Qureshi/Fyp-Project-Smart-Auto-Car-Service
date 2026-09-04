@@ -73,4 +73,45 @@ class Booking extends Model
     {
         return $this->hasOne(Rating::class);
     }
+
+    public function getAvailableWorkers()
+    {
+        if (!$this->service_provider_id) {
+            return collect();
+        }
+
+        $allWorkers = Worker::where('service_provider_id', $this->service_provider_id)
+            ->where('is_available', true)
+            ->get();
+
+        if (!$this->appointment_time) {
+            return $allWorkers;
+        }
+
+        $duration = $this->duration_minutes ?? 60;
+        $slotStart = \Carbon\Carbon::parse($this->appointment_time);
+        $slotEnd   = $slotStart->copy()->addMinutes($duration);
+
+        $activeBookings = self::where('service_provider_id', $this->service_provider_id)
+            ->where('id', '!=', $this->id)
+            ->whereNotNull('provider_worker_id')
+            ->whereDate('appointment_time', $slotStart->toDateString())
+            ->whereIn('status', ['confirmed', 'accepted', 'assigned', 'in_progress'])
+            ->get(['id', 'provider_worker_id', 'appointment_time', 'duration_minutes']);
+
+        $busyWorkerIds = [];
+        foreach ($activeBookings as $b) {
+            $bStart = \Carbon\Carbon::parse($b->appointment_time);
+            $bEnd   = $bStart->copy()->addMinutes($b->duration_minutes ?? 60);
+
+            if ($slotStart->lt($bEnd) && $slotEnd->gt($bStart)) {
+                $busyWorkerIds[] = $b->provider_worker_id;
+            }
+        }
+
+        return $allWorkers->filter(function ($worker) use ($busyWorkerIds) {
+            return !in_array($worker->id, $busyWorkerIds) || $worker->id == $this->provider_worker_id;
+        });
+    }
 }
+

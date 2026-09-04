@@ -47,18 +47,26 @@
                 <form action="{{ route('provider.bookings.assign', $b) }}" method="POST">
                     @csrf
                     <div class="input-group input-group-sm">
+@php
+    $availWorkers = $b->getAvailableWorkers();
+@endphp
                         <select name="worker_id" class="form-select form-select-sm" required>
-                            <option value="">Select worker…</option>
-                            @foreach($workers as $w)
-                                <option value="{{ $w->id }}"
-                                    {{ $b->provider_worker_id == $w->id ? 'selected' : '' }}>
-                                    {{ $w->name }}
-                                </option>
-                            @endforeach
+                            @if($availWorkers->isEmpty())
+                                <option value="" disabled selected>No free workers available</option>
+                            @else
+                                <option value="">Select worker…</option>
+                                @foreach($availWorkers as $w)
+                                    <option value="{{ $w->id }}"
+                                        {{ $b->provider_worker_id == $w->id ? 'selected' : '' }}>
+                                        {{ $w->name }}
+                                    </option>
+                                @endforeach
+                            @endif
                         </select>
-                        <button type="submit" class="btn btn-primary btn-sm">
+                        <button type="submit" class="btn btn-primary btn-sm" {{ $availWorkers->isEmpty() ? 'disabled' : '' }}>
                             <i class="fas fa-check"></i>
                         </button>
+
                     </div>
                 </form>
             </div>

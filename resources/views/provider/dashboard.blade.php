@@ -109,12 +109,20 @@
 @push('scripts')
 <script>
     setInterval(function(){
+        const tbody = document.getElementById('bookings-tbody');
+        if (!tbody) return;
+
+        const hasOpenCollapse = tbody.querySelector('.collapse.show') !== null;
+        const isUserInteracting = tbody.contains(document.activeElement);
+
         fetch(window.location.href, {
             headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}
         })
         .then(r=>r.json())
         .then(d=>{
-            if(d.html) document.getElementById('bookings-tbody').innerHTML=d.html;
+            if(d.html && !hasOpenCollapse && !isUserInteracting){
+                tbody.innerHTML = d.html;
+            }
             if(d.stats){
                 if(d.stats.total !== undefined) document.getElementById('stat-total').innerText = d.stats.total;
                 if(d.stats.pending !== undefined) document.getElementById('stat-pending').innerText = d.stats.pending;
@@ -125,6 +133,7 @@
         .catch(e=>console.error('Polling error', e));
     }, 5000);
 </script>
+
 @endpush
 @endsection
 
