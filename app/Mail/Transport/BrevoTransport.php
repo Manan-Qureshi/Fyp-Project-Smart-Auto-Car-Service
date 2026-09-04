@@ -15,7 +15,7 @@ class BrevoTransport extends AbstractTransport
     public function __construct(string $apiKey)
     {
         parent::__construct();
-        $this->apiKey = $apiKey;
+        $this->apiKey = trim(preg_replace('/\s+/', '', $apiKey));
     }
 
     protected function doSend(SentMessage $message): void
