@@ -20,8 +20,8 @@
             <i class="fas fa-car-side me-2"></i> Smart Auto Car Service
         </div>
 
-        {{-- Hide generic Dashboard for admin; they have their own below --}}
-        @if(!auth()->user()->isAdmin())
+        {{-- Hide generic Dashboard for admin and provider; they have their own below --}}
+        @if(!auth()->user()->isAdmin() && !auth()->user()->isProvider())
         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="fas fa-th-large"></i> Dashboard
         </a>

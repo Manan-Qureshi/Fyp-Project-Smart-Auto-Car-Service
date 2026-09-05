@@ -65,23 +65,6 @@ class ProviderDashboardController extends Controller
 
         $workers = $provider->workers()->get();
 
-        // Check for unassigned upcoming services & notify provider if any exist
-        $unassignedCount = Booking::where('service_provider_id', $provider->id)
-            ->whereDate('appointment_time', '>=', now()->toDateString())
-            ->whereIn('status', ['confirmed', 'accepted'])
-            ->whereNull('provider_worker_id')
-            ->count();
-
-        if ($unassignedCount > 0 && Auth::user()) {
-            $recentNotifExists = Auth::user()->unreadNotifications()
-                ->where('type', 'App\Notifications\UnassignedServiceReminder')
-                ->where('created_at', '>=', now()->subMinutes(30))
-                ->exists();
-            if (!$recentNotifExists) {
-                Auth::user()->notify(new \App\Notifications\UnassignedServiceReminder($unassignedCount));
-            }
-        }
-
         if (request()->ajax()) {
             return response()->json([
                 'html'  => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render(),
