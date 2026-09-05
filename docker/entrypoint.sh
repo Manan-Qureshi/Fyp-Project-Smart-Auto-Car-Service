@@ -11,8 +11,8 @@ php artisan view:cache
 # Create storage symlink
 php artisan storage:link --force
 
-# Run database migrations and seeders (FRESH - drops all tables)
-php artisan migrate:fresh --seed --force
+# Run database migrations and seeders
+php artisan migrate --force
 
 # Start Supervisord (Nginx + PHP-FPM)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
