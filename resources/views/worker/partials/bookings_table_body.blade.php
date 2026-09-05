@@ -45,26 +45,26 @@
         </span>
     </td>
     <td class="text-end pe-3">
-        <div class="d-flex gap-2 justify-content-end align-items-center">
+        <div class="d-flex gap-2 justify-content-end align-items-center text-nowrap">
             @if($isActionable && $b->status === 'assigned')
-                <form action="{{ route('bookings.status', $b) }}" method="POST">
+                <form action="{{ route('bookings.status', $b) }}" method="POST" class="d-inline mb-0">
                     @csrf @method('PATCH')
                     <button type="submit" name="status" value="in_progress"
-                            class="btn btn-sm btn-primary rounded-pill">
-                        <i class="fas fa-play me-1"></i> Start Job
+                            class="btn btn-sm btn-primary rounded-pill text-nowrap px-3">
+                        <i class="fas fa-play me-1"></i>Start Job
                     </button>
                 </form>
             @elseif($isActionable && $b->status === 'in_progress')
-                <form action="{{ route('bookings.status', $b) }}" method="POST">
+                <form action="{{ route('bookings.status', $b) }}" method="POST" class="d-inline mb-0">
                     @csrf @method('PATCH')
                     <button type="submit" name="status" value="completed"
-                            class="btn btn-sm btn-success rounded-pill">
-                        <i class="fas fa-check me-1"></i> Mark Complete
+                            class="btn btn-sm btn-success rounded-pill text-nowrap px-3">
+                        <i class="fas fa-check me-1"></i>Mark Complete
                     </button>
                 </form>
             @elseif(!in_array($b->status, ['completed', 'cancelled']) && !$isActionable)
-                <div class="text-muted small border rounded-3 px-2 py-1">
-                    <i class="fas fa-lock me-1"></i> Locked
+                <div class="text-muted small border rounded-3 px-2 py-1 text-nowrap d-inline-block">
+                    <i class="fas fa-lock me-1"></i>Locked
                 </div>
             @endif
         </div>

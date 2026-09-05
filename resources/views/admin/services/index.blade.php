@@ -267,16 +267,16 @@
                             </td>
                             <td class="fw-bold text-primary">PKR {{ number_format($service->base_price) }}</td>
                             <td class="text-muted small">{{ $service->duration_minutes }} min</td>
-                            <td class="text-end">
-                                <div class="d-flex gap-1 justify-content-end">
+                            <td class="text-end pe-3">
+                                <div class="d-flex gap-2 justify-content-end align-items-center text-nowrap">
                                     <a href="/admin/services?edit={{ $service->id }}"
                                        class="btn btn-sm btn-outline-warning rounded-pill">
-                                        <i class="fas fa-pen"></i>
+                                        <i class="fas fa-pen me-1"></i> Edit
                                     </a>
-                                    <form action="{{ route('admin.services.destroy', $service) }}" method="POST">
+                                    <form action="{{ route('admin.services.destroy', $service) }}" method="POST" class="d-inline mb-0">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger rounded-pill">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash me-1"></i> Remove
                                         </button>
                                     </form>
                                 </div>
