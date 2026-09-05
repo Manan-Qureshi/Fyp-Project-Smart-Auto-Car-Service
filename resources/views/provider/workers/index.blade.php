@@ -64,11 +64,11 @@
                         @endif
                     </td>
                     <td class="text-end pe-3">
-                        <div class="d-flex gap-2 justify-content-end align-items-center">
+                        <div class="d-flex gap-2 justify-content-end align-items-center text-nowrap">
                             <a href="{{ route('provider.workers.edit', $w) }}" class="btn btn-sm btn-outline-secondary rounded-pill">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>
-                            <form action="{{ route('provider.workers.destroy', $w) }}" method="POST" class="d-inline">
+                            <form action="{{ route('provider.workers.destroy', $w) }}" method="POST" class="d-inline mb-0">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
                                     <i class="fas fa-trash me-1"></i> Remove

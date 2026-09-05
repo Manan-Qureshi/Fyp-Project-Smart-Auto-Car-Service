@@ -35,7 +35,7 @@
         @endif
 
         @if($canAssign)
-            <button class="btn btn-sm btn-outline-primary rounded-pill"
+            <button class="btn btn-sm btn-outline-primary rounded-pill text-nowrap"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#assignForm{{ $b->id }}"

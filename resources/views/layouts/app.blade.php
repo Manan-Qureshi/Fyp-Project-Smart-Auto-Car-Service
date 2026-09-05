@@ -43,7 +43,7 @@
                 <i class="fas fa-car"></i> Car Types
             </a>
             <a href="{{ route('admin.financial') }}" class="nav-link {{ request()->routeIs('admin.financial') ? 'active' : '' }}">
-                <i class="fas fa-chart-line"></i> Payments & Commission
+                <i class="fas fa-chart-line"></i> Payments
             </a>
         @endif
 
@@ -187,9 +187,119 @@
 
     if (!badge) return; // Not logged in or bell not present
 
+    var lastKnownCount = null;
+    var seenNotifIds = new Set();
+    var isFirstLoad = true;
+
+    // Web Audio API Ringtone Alert Generator
+    var audioCtx = null;
+    function getAudioContext() {
+        if (!audioCtx) {
+            var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                audioCtx = new AudioContextClass();
+            }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    // Unlock Audio Context on user interaction
+    function unlockAudio() {
+        getAudioContext();
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('keydown', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+    }
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+
+    function playNotificationRingtone() {
+        try {
+            var ctx = getAudioContext();
+            if (!ctx) return;
+
+            var now = ctx.currentTime;
+
+            // Tone 1 (High chime: 659.25Hz - E5)
+            var osc1 = ctx.createOscillator();
+            var gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(659.25, now);
+            gain1.gain.setValueAtTime(0.2, now);
+            gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.35);
+
+            // Tone 2 (Brighter chime: 880Hz - A5)
+            var osc2 = ctx.createOscillator();
+            var gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880, now + 0.12);
+            gain2.gain.setValueAtTime(0.25, now + 0.12);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.12);
+            osc2.stop(now + 0.6);
+
+            // Tone 3 (Final pleasant echo tone: 1046.50Hz - C6)
+            var osc3 = ctx.createOscillator();
+            var gain3 = ctx.createGain();
+            osc3.type = 'sine';
+            osc3.frequency.setValueAtTime(1046.50, now + 0.25);
+            gain3.gain.setValueAtTime(0.2, now + 0.25);
+            gain3.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+            osc3.connect(gain3);
+            gain3.connect(ctx.destination);
+            osc3.start(now + 0.25);
+            osc3.stop(now + 0.75);
+        } catch (e) {
+            console.warn('Notification audio play blocked or error:', e);
+        }
+    }
+
     function colorClass(color) {
         var map = { success:'text-success', danger:'text-danger', warning:'text-warning', info:'text-info', primary:'text-primary' };
         return map[color] || 'text-secondary';
+    }
+
+    function showToastAlert(title, message, icon, color) {
+        var toastContainer = document.getElementById('notif-toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'notif-toast-container';
+            toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+
+        var toastEl = document.createElement('div');
+        toastEl.className = 'toast show align-items-center text-white bg-dark border-0 rounded-4 shadow-lg mb-2';
+        toastEl.setAttribute('role', 'alert');
+        toastEl.innerHTML = '<div class="d-flex p-3">' +
+            '<div class="toast-body d-flex align-items-center gap-2">' +
+                '<i class="fas ' + (icon || 'fa-bell') + ' fa-lg ' + colorClass(color) + '"></i>' +
+                '<div>' +
+                    '<div class="fw-bold small">' + (title || 'New Notification') + '</div>' +
+                    '<div class="text-white-50 small">' + (message || '') + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" onclick="this.closest(\'.toast\').remove()"></button>' +
+        '</div>';
+
+        toastContainer.appendChild(toastEl);
+        setTimeout(function () {
+            if (toastEl && toastEl.parentNode) {
+                toastEl.classList.remove('show');
+                setTimeout(function () { if (toastEl && toastEl.parentNode) toastEl.remove(); }, 300);
+            }
+        }, 6000);
     }
 
     function loadNotifications() {
@@ -197,6 +307,31 @@
             .then(function(r){ return r.json(); })
             .then(function(data) {
                 var count = data.count || 0;
+                var newlyReceivedNotifs = [];
+
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(function(n) {
+                        if (!seenNotifIds.has(n.id)) {
+                            seenNotifIds.add(n.id);
+                            if (!isFirstLoad) {
+                                newlyReceivedNotifs.push(n);
+                            }
+                        }
+                    });
+                }
+
+                // If new notifications arrived after initial page load
+                if (!isFirstLoad && (newlyReceivedNotifs.length > 0 || (lastKnownCount !== null && count > lastKnownCount))) {
+                    playNotificationRingtone();
+                    if (newlyReceivedNotifs.length > 0) {
+                        var latest = newlyReceivedNotifs[0];
+                        showToastAlert(latest.data.title, latest.data.message, latest.data.icon, latest.data.color);
+                    }
+                }
+
+                lastKnownCount = count;
+                isFirstLoad = false;
+
                 // Update badge
                 if (count > 0) {
                     badge.textContent = count > 9 ? '9+' : count;
@@ -245,7 +380,7 @@
     }
 
     loadNotifications();
-    setInterval(loadNotifications, 10000); // Poll every 10 seconds
+    setInterval(loadNotifications, 5000);
 })();
 </script>
 @endauth
