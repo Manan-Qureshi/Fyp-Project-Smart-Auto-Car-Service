@@ -126,14 +126,44 @@ class AdminController extends Controller
         return redirect()->route('admin.providers.index')->with('success', 'Provider removed.');
     }
 
-    public function financial()
+    public function financial(Request $request)
     {
-        $commissions    = Commission::with(['booking.service', 'serviceProvider'])->latest()->paginate(20);
-        $totalRevenue   = Commission::sum('commission_amount');
-        $totalEarnings  = Commission::sum('provider_earning');
-        $totalBookings  = Booking::where('status', 'completed')->count();
+        $startDate  = $request->input('start_date') ?? $request->input('date');
+        $endDate    = $request->input('end_date');
+        $providerId = $request->input('provider_id');
 
-        if (request()->ajax()) {
+        $query = Commission::with(['booking.service', 'serviceProvider']);
+
+        if ($startDate && $endDate) {
+            $query->whereDate('created_at', '>=', $startDate)
+                  ->whereDate('created_at', '<=', $endDate);
+        } elseif ($startDate) {
+            $query->whereDate('created_at', $startDate);
+        }
+
+        if ($providerId) {
+            $query->where('service_provider_id', $providerId);
+        }
+
+        $commissions    = (clone $query)->latest()->paginate(5)->appends($request->all());
+        $totalRevenue   = (clone $query)->sum('commission_amount');
+        $totalEarnings  = (clone $query)->sum('provider_earning');
+
+        $bookingQuery   = Booking::where('status', 'completed');
+        if ($startDate && $endDate) {
+            $bookingQuery->whereDate('created_at', '>=', $startDate)
+                        ->whereDate('created_at', '<=', $endDate);
+        } elseif ($startDate) {
+            $bookingQuery->whereDate('created_at', $startDate);
+        }
+        if ($providerId) {
+            $bookingQuery->where('service_provider_id', $providerId);
+        }
+        $totalBookings  = $bookingQuery->count();
+
+        $providers = ServiceProvider::orderBy('business_name')->get();
+
+        if ($request->ajax()) {
             return response()->json([
                 'stats' => [
                     'totalBookings' => number_format($totalBookings),
@@ -143,6 +173,6 @@ class AdminController extends Controller
             ]);
         }
 
-        return view('admin.financial', compact('commissions', 'totalRevenue', 'totalEarnings', 'totalBookings'));
+        return view('admin.financial', compact('commissions', 'totalRevenue', 'totalEarnings', 'totalBookings', 'startDate', 'endDate', 'providers', 'providerId'));
     }
 }
