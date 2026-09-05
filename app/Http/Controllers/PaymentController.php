@@ -111,6 +111,14 @@ class PaymentController extends Controller
                 );
             }
 
+            // Notify all admins about payment received
+            $admins = \App\Models\User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(
+                    new \App\Notifications\ServiceStatusUpdated($booking, 'payment_received')
+                );
+            }
+
             return redirect()->route('bookings.confirmation', $booking)
                 ->with('success', 'Payment successful! Your booking is confirmed.');
         }

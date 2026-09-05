@@ -17,9 +17,9 @@ class SendUnassignedServiceReminders extends Command
     {
         $today = Carbon::today();
 
-        // Find all providers with confirmed today-bookings that have no worker yet
+        // Find all providers with confirmed upcoming bookings that have no worker yet
         $providers = ServiceProvider::with(['user', 'bookings' => function ($q) use ($today) {
-            $q->whereDate('appointment_time', $today)
+            $q->whereDate('appointment_time', '>=', $today)
               ->whereIn('status', ['confirmed', 'accepted'])
               ->whereNull('provider_worker_id');
         }])->get();
@@ -27,8 +27,14 @@ class SendUnassignedServiceReminders extends Command
         foreach ($providers as $provider) {
             $count = $provider->bookings->count();
             if ($count > 0 && $provider->user) {
-                $provider->user->notify(new UnassignedServiceReminder($count));
-                $this->info("Notified provider #{$provider->id} about {$count} unassigned booking(s).");
+                $recentNotifExists = $provider->user->unreadNotifications()
+                    ->where('type', 'App\Notifications\UnassignedServiceReminder')
+                    ->where('created_at', '>=', now()->subMinutes(30))
+                    ->exists();
+                if (!$recentNotifExists) {
+                    $provider->user->notify(new UnassignedServiceReminder($count));
+                    $this->info("Notified provider #{$provider->id} about {$count} unassigned booking(s).");
+                }
             }
         }
     }

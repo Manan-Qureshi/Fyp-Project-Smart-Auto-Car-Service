@@ -21,8 +21,8 @@ class UnassignedServiceReminder extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title'   => 'Unassigned Services Reminder',
-            'message' => "You have {$this->count} pending service(s) today that still need a worker assigned. Please assign workers before the service time!",
+            'title'   => 'Unassigned Services Alert',
+            'message' => "You have {$this->count} upcoming service(s) that still need a worker assigned. Please assign workers before the service time!",
             'count'   => $this->count,
             'icon'    => 'fa-user-plus',
             'color'   => 'warning',

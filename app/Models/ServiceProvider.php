@@ -35,6 +35,11 @@ class ServiceProvider extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function user()
+    {
+        return $this->owner();
+    }
+
     public function workers()
     {
         return $this->hasMany(Worker::class);

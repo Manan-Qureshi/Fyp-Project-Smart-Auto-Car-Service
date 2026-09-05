@@ -65,6 +65,23 @@ class ProviderDashboardController extends Controller
 
         $workers = $provider->workers()->get();
 
+        // Check for unassigned upcoming services & notify provider if any exist
+        $unassignedCount = Booking::where('service_provider_id', $provider->id)
+            ->whereDate('appointment_time', '>=', now()->toDateString())
+            ->whereIn('status', ['confirmed', 'accepted'])
+            ->whereNull('provider_worker_id')
+            ->count();
+
+        if ($unassignedCount > 0 && Auth::user()) {
+            $recentNotifExists = Auth::user()->unreadNotifications()
+                ->where('type', 'App\Notifications\UnassignedServiceReminder')
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->exists();
+            if (!$recentNotifExists) {
+                Auth::user()->notify(new \App\Notifications\UnassignedServiceReminder($unassignedCount));
+            }
+        }
+
         if (request()->ajax()) {
             return response()->json([
                 'html'  => view('provider.partials.bookings_table_body', compact('bookings', 'workers'))->render(),
@@ -128,16 +145,6 @@ class ProviderDashboardController extends Controller
 
         if ($request->status === 'completed' && $booking->user) {
             $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
-        } elseif ($request->status === 'cancelled') {
-            if ($booking->user) {
-                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_provider'));
-            }
-            if ($booking->provider_worker_id) {
-                $w = Worker::find($booking->provider_worker_id);
-                if ($w && $w->user) {
-                    $w->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_provider'));
-                }
-            }
         }
 
         return back()->with('success', 'Booking updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');

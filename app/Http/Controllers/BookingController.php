@@ -181,15 +181,9 @@ class BookingController extends Controller
                 if ($booking->user) {
                     $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'started'));
                 }
-                if ($booking->serviceProvider && $booking->serviceProvider->user) {
-                    $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'worker_started'));
-                }
             } elseif ($newStatus === 'completed') {
                 if ($booking->user) {
                     $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
-                }
-                if ($booking->serviceProvider && $booking->serviceProvider->user) {
-                    $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'worker_finished'));
                 }
             }
 
@@ -219,21 +213,35 @@ class BookingController extends Controller
         }
 
         $payment = $booking->payment;
+        $refundProcessed = false;
 
         if ($payment && $payment->status === 'paid' && $payment->stripe_payment_intent) {
             try {
                 \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
                 \Stripe\Refund::create(['payment_intent' => $payment->stripe_payment_intent]);
                 $payment->update(['status' => 'refunded']);
+                $refundProcessed = true;
             } catch (\Exception $e) {
                 if (!str_contains($e->getMessage(), 'already been refunded')) {
                     return back()->with('error', 'Refund failed: ' . $e->getMessage());
                 }
                 $payment->update(['status' => 'refunded']);
+                $refundProcessed = true;
             }
+        } elseif ($payment && $payment->status === 'paid') {
+            $payment->update(['status' => 'refunded']);
+            $refundProcessed = true;
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        if ($refundProcessed) {
+            // Notify admins about payment refund
+            $admins = \App\Models\User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'payment_refunded'));
+            }
+        }
 
         if ($booking->serviceProvider && $booking->serviceProvider->user) {
             $booking->serviceProvider->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'cancelled_by_customer'));
