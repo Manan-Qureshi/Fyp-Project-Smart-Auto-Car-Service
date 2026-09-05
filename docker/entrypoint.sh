@@ -13,6 +13,7 @@ php artisan storage:link --force
 
 # Run database migrations and seeders
 php artisan migrate --force
+php artisan db:seed --force
 
 # Start Supervisord (Nginx + PHP-FPM)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

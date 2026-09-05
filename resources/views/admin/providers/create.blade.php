@@ -3,15 +3,42 @@
 <div class="container py-3" style="max-width:850px">
     <div class="glass-card p-4 rounded-4 shadow-sm">
         <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle text-primary me-2"></i>Add Service Provider</h5>
+
+        @if ($errors->any())
+            <div class="alert alert-danger rounded-3 py-2 px-3 mb-3">
+                <ul class="mb-0 ps-3">
+                    @foreach ($errors->all() as $error)
+                        <li class="small">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('admin.providers.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <!-- Login Account Section -->
             <h6 class="fw-semibold text-muted text-uppercase mb-2" style="font-size:.7rem">1. Account Details</h6>
             <div class="row g-2 mb-3">
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Owner Name *</label><input type="text" name="name" class="form-control form-control-sm rounded-3" required value="{{ old('name') }}"></div>
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Email *</label><input type="email" name="email" class="form-control form-control-sm rounded-3" required value="{{ old('email') }}"></div>
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Password *</label><input type="password" name="password" class="form-control form-control-sm rounded-3" required></div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small mb-1">Owner Name *</label>
+                    <input type="text" name="name" class="form-control form-control-sm rounded-3 {{ $errors->has('name') ? 'is-invalid' : '' }}" required value="{{ old('name') }}">
+                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small mb-1">Email *</label>
+                    <input type="email" name="email" class="form-control form-control-sm rounded-3 {{ $errors->has('email') ? 'is-invalid' : '' }}" required value="{{ old('email') }}">
+                    @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small mb-1">Password *</label>
+                    <input type="password" name="password" class="form-control form-control-sm rounded-3 {{ $errors->has('password') ? 'is-invalid' : '' }}" required>
+                    @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small mb-1">Confirm Password *</label>
+                    <input type="password" name="password_confirmation" class="form-control form-control-sm rounded-3" required>
+                </div>
             </div>
 
             <!-- Business Details Section -->
