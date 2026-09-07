@@ -2,47 +2,19 @@
 
 @section('content')
 <div class="container-fluid px-4 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h3 class="fw-bold mb-0"><i class="fas fa-tachometer-alt text-primary me-2"></i>Provider Dashboard</h3>
-        <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ $provider->business_name }}</span>
-    </div>
-
-    {{-- Stripe Connect Payouts Status Card --}}
-    <div class="glass-card p-3 p-md-4 rounded-4 shadow-sm mb-4 bg-white border-start border-4 {{ $provider->isStripeConnected() ? 'border-success' : 'border-primary' }}">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle p-3 {{ $provider->isStripeConnected() ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary' }}">
-                    <i class="fab fa-stripe-s fa-2x"></i>
-                </div>
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <h5 class="fw-bold mb-0">Stripe Payout Account</h5>
-                        @if($provider->isStripeConnected())
-                            <span class="badge bg-success rounded-pill px-2 py-1 small"><i class="fas fa-check-circle me-1"></i>Active & Connected</span>
-                        @else
-                            <span class="badge bg-warning text-dark rounded-pill px-2 py-1 small"><i class="fas fa-exclamation-circle me-1"></i>Setup Required</span>
-                        @endif
-                    </div>
-                    <p class="text-muted small mb-0">
-                        @if($provider->isStripeConnected())
-                            Automated 90% payouts are active for Account ID: <code class="text-dark fw-semibold">{{ $provider->stripe_account_id }}</code>.
-                        @else
-                            Connect your dedicated Stripe Express account to automatically receive 90% earnings per completed service.
-                        @endif
-                    </p>
-                </div>
-            </div>
-            <div>
-                @if($provider->isStripeConnected())
-                    <a href="{{ route('provider.stripe.dashboard') }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-semibold shadow-sm">
-                        <i class="fas fa-external-link-alt me-2"></i>Open My Stripe Dashboard
-                    </a>
-                @else
-                    <a href="{{ route('provider.stripe.connect') }}" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm" style="background: linear-gradient(135deg, #635bff, #0048e5); border: none;">
-                        <i class="fab fa-stripe me-2 fa-lg"></i>Connect with Stripe
-                    </a>
-                @endif
-            </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">{{ $provider->business_name }}</span>
+            @if($provider->isStripeConnected())
+                <a href="{{ route('provider.stripe.dashboard') }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                    <i class="fab fa-stripe me-1 text-primary"></i> Stripe Dashboard <i class="fas fa-external-link-alt ms-1 small"></i>
+                </a>
+            @else
+                <a href="{{ route('provider.stripe.connect') }}" class="btn btn-sm text-white rounded-pill px-3 py-2 fw-semibold shadow-sm" style="background: linear-gradient(135deg, #635bff, #0048e5); border: none;">
+                    <i class="fab fa-stripe me-1"></i> Connect Stripe
+                </a>
+            @endif
         </div>
     </div>
     <div class="row g-3 mb-4">
