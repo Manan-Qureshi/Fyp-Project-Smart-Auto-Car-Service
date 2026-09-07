@@ -133,6 +133,47 @@ class PaymentController extends Controller
             ->with('error', 'Payment was cancelled. Your booking was not confirmed.');
     }
 
+    public static function disburseProviderPayout(Booking $booking)
+    {
+        $provider = $booking->serviceProvider;
+        if (!$provider || empty($provider->stripe_account_id) || !$provider->stripe_onboarding_completed) {
+            return false;
+        }
+
+        $commission = Commission::where('booking_id', $booking->id)->first();
+        if (!$commission || !empty($commission->stripe_transfer_id)) {
+            return false;
+        }
+
+        try {
+            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+            $payoutAmount = (int) round($commission->provider_earning * 100);
+            if ($payoutAmount <= 0) {
+                return false;
+            }
+
+            $transfer = \Stripe\Transfer::create([
+                'amount'         => $payoutAmount,
+                'currency'       => 'pkr',
+                'destination'    => $provider->stripe_account_id,
+                'transfer_group' => 'BOOKING_' . $booking->id,
+                'description'    => "Auto-Payout (90%) for Booking #" . $booking->id,
+            ], [
+                'idempotency_key' => 'transfer_booking_' . $booking->id,
+            ]);
+
+            $commission->update([
+                'stripe_transfer_id' => $transfer->id,
+            ]);
+
+            return $transfer;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Stripe Connect Transfer for Booking {$booking->id}: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function checkout(Request $request) { return $this->checkoutBooking([]); }
     public function assignWorker(Booking $booking) {}
 }

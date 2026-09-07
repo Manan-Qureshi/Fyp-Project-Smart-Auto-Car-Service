@@ -16,6 +16,7 @@ class Commission extends Model
         'commission_rate',
         'commission_amount',
         'provider_earning',
+        'stripe_transfer_id',
     ];
 
     public function booking()

@@ -22,13 +22,21 @@ class ServiceProvider extends Model
         'is_active',
         'open_time',
         'close_time',
+        'stripe_account_id',
+        'stripe_onboarding_completed',
     ];
 
     protected $casts = [
         'latitude'  => 'float',
         'longitude' => 'float',
         'is_active' => 'boolean',
+        'stripe_onboarding_completed' => 'boolean',
     ];
+
+    public function isStripeConnected(): bool
+    {
+        return !empty($this->stripe_account_id) && $this->stripe_onboarding_completed;
+    }
 
     public function owner()
     {

@@ -126,8 +126,11 @@ class ProviderDashboardController extends Controller
 
         $booking->update(['status' => $request->status]);
 
-        if ($request->status === 'completed' && $booking->user) {
-            $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
+        if ($request->status === 'completed') {
+            \App\Http\Controllers\PaymentController::disburseProviderPayout($booking);
+            if ($booking->user) {
+                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
+            }
         }
 
         return back()->with('success', 'Booking updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');

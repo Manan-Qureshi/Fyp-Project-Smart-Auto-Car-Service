@@ -81,6 +81,7 @@
                             <th>Total</th>
                             <th>Commission (10%)</th>
                             <th>Provider Earns</th>
+                            <th>Payout Status</th>
                             <th>Date</th>
                         </tr>
                     </thead>
@@ -93,6 +94,17 @@
                         <td>PKR {{ number_format($c->total_amount) }}</td>
                         <td class="text-success fw-semibold">PKR {{ number_format($c->commission_amount) }}</td>
                         <td>PKR {{ number_format($c->provider_earning) }}</td>
+                        <td>
+                            @if(!empty($c->stripe_transfer_id))
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small" title="{{ $c->stripe_transfer_id }}">
+                                    <i class="fas fa-check-circle me-1"></i>Stripe Disbursed
+                                </span>
+                            @else
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small">
+                                    <i class="fas fa-clock me-1"></i>Pending Settlement
+                                </span>
+                            @endif
+                        </td>
                         <td class="text-muted small">{{ $c->created_at->format('d M Y, h:i A') }}</td>
                     </tr>
                     @endforeach

@@ -61,6 +61,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/services', [App\Http\Controllers\ProviderServiceController::class, 'index'])->name('services.index');
         Route::post('/services/{service}/toggle', [App\Http\Controllers\ProviderServiceController::class, 'toggle'])->name('services.toggle');
         Route::put('/services/hours', [App\Http\Controllers\ProviderServiceController::class, 'updateHours'])->name('services.hours');
+
+        // Stripe Connect Payouts
+        Route::get('/stripe/connect', [App\Http\Controllers\StripeConnectController::class, 'connect'])->name('stripe.connect');
+        Route::get('/stripe/return', [App\Http\Controllers\StripeConnectController::class, 'return'])->name('stripe.return');
+        Route::get('/stripe/refresh', [App\Http\Controllers\StripeConnectController::class, 'refresh'])->name('stripe.refresh');
+        Route::get('/stripe/dashboard', [App\Http\Controllers\StripeConnectController::class, 'dashboard'])->name('stripe.dashboard');
     });
 
     Route::patch('/bookings/{booking}/status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('bookings.status');

@@ -182,6 +182,7 @@ class BookingController extends Controller
                     $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'started'));
                 }
             } elseif ($newStatus === 'completed') {
+                \App\Http\Controllers\PaymentController::disburseProviderPayout($booking);
                 if ($booking->user) {
                     $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
                 }
@@ -196,6 +197,13 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => $request->status]);
+
+        if ($request->status === 'completed') {
+            \App\Http\Controllers\PaymentController::disburseProviderPayout($booking);
+            if ($booking->user) {
+                $booking->user->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'completed'));
+            }
+        }
 
         return back()->with('success', 'Booking status updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');
     }
