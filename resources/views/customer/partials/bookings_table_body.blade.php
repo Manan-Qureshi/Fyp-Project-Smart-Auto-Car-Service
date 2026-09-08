@@ -1,6 +1,6 @@
 @if($bookings->isEmpty())
     <tr>
-        <td colspan="4" class="text-center py-5">
+        <td colspan="6" class="text-center py-5">
             <i class="fas fa-calendar-times fa-3x text-muted mb-3 opacity-50"></i>
             <h5 class="text-muted">No bookings yet</h5>
         </td>
@@ -35,6 +35,27 @@
             <small class="text-muted">{{ $booking->appointment_time->format('h:i A') }}</small>
         @else
             <span class="text-muted fst-italic">TBD</span>
+        @endif
+    </td>
+    <td>
+        <span class="badge bg-{{ $statusColor }} rounded-pill px-3 py-1 text-capitalize">
+            {{ str_replace('_', ' ', $booking->status) }}
+        </span>
+    </td>
+    <td class="text-end pe-3">
+        @if($booking->status === 'completed')
+            @if($booking->rating)
+                <span class="badge bg-warning text-dark rounded-pill px-2 py-1 small" title="Rated {{ $booking->rating->rating }} Stars">
+                    <i class="fas fa-star text-warning me-1"></i>{{ $booking->rating->rating }}★ Rated
+                </span>
+            @else
+                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-semibold shadow-sm"
+                        data-bs-toggle="modal" data-bs-target="#rateModal{{ $booking->id }}">
+                    <i class="fas fa-star me-1"></i>Rate Service
+                </button>
+            @endif
+        @else
+            <span class="text-muted small">—</span>
         @endif
     </td>
 </tr>

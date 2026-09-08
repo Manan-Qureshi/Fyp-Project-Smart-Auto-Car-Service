@@ -33,6 +33,8 @@
                             <th>Name</th>
                             <th>Provider Name</th>
                             <th>Service Time</th>
+                            <th>Status</th>
+                            <th class="text-end pe-3">Action</th>
                         </tr>
                     </thead>
                     <tbody id="bookings-tbody">
