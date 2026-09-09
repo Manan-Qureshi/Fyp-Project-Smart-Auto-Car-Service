@@ -12,16 +12,28 @@ use Stripe\Checkout\Session;
 
 class PaymentController extends Controller
 {
+    /**
+     * Fixed PKR → USD conversion rate for Stripe.
+     * All prices in the DB/UI remain in PKR; only Stripe API calls use USD.
+     */
+    const PKR_TO_USD = 280.0;
+
     public function checkoutBooking(array $bookingData)
     {
         if ($bookingData['user_id'] !== Auth::id()) abort(403);
 
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
-        $service = \App\Models\Service::find($bookingData['service_id']);
+        $service  = \App\Models\Service::find($bookingData['service_id']);
         $provider = \App\Models\ServiceProvider::find($bookingData['service_provider_id']);
         $carModel = $bookingData['car_model_id'] ? \App\Models\CarModel::find($bookingData['car_model_id']) : null;
         $carLabel = $carModel ? ' (' . $carModel->name . ')' : '';
+
+        // Convert PKR amount to USD cents for Stripe (Stripe does not support PKR).
+        // The original PKR price is preserved in metadata and displayed in the app UI.
+        $pkrPrice     = (float)$bookingData['final_price'];
+        $usdCents     = (int) round(($pkrPrice / self::PKR_TO_USD) * 100);
+        $usdFeeCents  = (int) round($usdCents * 0.10); // 10% platform commission
 
         $metadata = [
             'user_id'             => (string)$bookingData['user_id'],
@@ -32,19 +44,33 @@ class PaymentController extends Controller
             'appointment_time'    => (string)$bookingData['appointment_time'],
             'duration_minutes'    => (string)$bookingData['duration_minutes'],
             'notes'               => (string)($bookingData['notes'] ?? ''),
-            'final_price'         => (string)$bookingData['final_price'],
+            'final_price'         => (string)$pkrPrice, // stored in PKR
         ];
 
-        $session = Session::create([
+        // Build payment_intent_data: route funds to provider's connected Stripe account
+        // if they have completed Stripe Connect onboarding.
+        $paymentIntentData = [];
+        if (!empty($provider->stripe_account_id) && $provider->stripe_onboarding_completed) {
+            $paymentIntentData = [
+                'transfer_data'        => [
+                    'destination' => $provider->stripe_account_id,
+                ],
+                'application_fee_amount' => $usdFeeCents,
+                'description' => "Booking #{$bookingData['service_provider_id']} – Rs. " . number_format($pkrPrice, 0) . ' PKR',
+            ];
+        }
+
+        $sessionParams = [
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
-                    'currency'     => 'pkr',
+                    // Stripe processes in USD; product name shows PKR so customer is informed
+                    'currency'     => 'usd',
                     'product_data' => [
-                        'name'        => $service->name . $carLabel,
+                        'name'        => $service->name . $carLabel . ' — Rs. ' . number_format($pkrPrice, 0) . ' PKR',
                         'description' => 'Provider: ' . $provider->business_name,
                     ],
-                    'unit_amount'  => (int)($bookingData['final_price'] * 100),
+                    'unit_amount'  => $usdCents,
                 ],
                 'quantity' => 1,
             ]],
@@ -52,7 +78,13 @@ class PaymentController extends Controller
             'success_url' => route('payment.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url'  => route('payment.cancel'),
             'metadata'    => $metadata,
-        ]);
+        ];
+
+        if (!empty($paymentIntentData)) {
+            $sessionParams['payment_intent_data'] = $paymentIntentData;
+        }
+
+        $session = Session::create($sessionParams);
 
         return redirect($session->url);
     }
@@ -148,17 +180,20 @@ class PaymentController extends Controller
         try {
             \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
 
-            $payoutAmount = (int) round($commission->provider_earning * 100);
-            if ($payoutAmount <= 0) {
+            // Provider earning is stored in PKR; convert to USD cents for Stripe.
+            // The Checkout Session already routed funds via transfer_data.destination,
+            // so this is a fallback path for edge cases (e.g. non-connected providers).
+            $payoutAmountUsdCents = (int) round(($commission->provider_earning / self::PKR_TO_USD) * 100);
+            if ($payoutAmountUsdCents <= 0) {
                 return false;
             }
 
             $transfer = \Stripe\Transfer::create([
-                'amount'         => $payoutAmount,
-                'currency'       => 'pkr',
+                'amount'         => $payoutAmountUsdCents,
+                'currency'       => 'usd',
                 'destination'    => $provider->stripe_account_id,
                 'transfer_group' => 'BOOKING_' . $booking->id,
-                'description'    => "Auto-Payout (90%) for Booking #" . $booking->id,
+                'description'    => "Fallback Payout (90%) for Booking #" . $booking->id,
             ], [
                 'idempotency_key' => 'transfer_booking_' . $booking->id,
             ]);
@@ -169,7 +204,7 @@ class PaymentController extends Controller
 
             return $transfer;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Stripe Connect Transfer for Booking {$booking->id}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Stripe Connect Transfer FAILED for Booking {$booking->id}: " . $e->getMessage());
             return false;
         }
     }
