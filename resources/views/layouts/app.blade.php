@@ -15,7 +15,10 @@
 <body>
 <div id="app">
     @auth
-    <div class="sidebar">
+    {{-- Sidebar mobile overlay --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="appSidebar">
         <div class="sidebar-brand">
             <i class="fas fa-car-side me-2"></i> Smart Auto Car Service
         </div>
@@ -84,8 +87,12 @@
     <div class="{{ auth()->check() ? 'main-content' : '' }} {{ (request()->is('login') || request()->is('register')) ? 'auth-mode' : '' }}">
         @if(!request()->is('login') && !request()->is('register'))
         <div class="glass-header justify-content-between">
-            <div>
+            <div class="d-flex align-items-center gap-2">
                 @auth
+                    {{-- Mobile hamburger --}}
+                    <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggle" style="padding:0.3rem 0.5rem;">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h4 class="m-0 fw-semibold">Welcome, {{ Auth::user()->name }}</h4>
                 @else
                     <a class="navbar-brand text-white fw-bold" href="{{ url('/') }}">
@@ -384,5 +391,52 @@
 })();
 </script>
 @endauth
+
+{{-- Mobile Sidebar Toggle Script --}}
+<script>
+(function () {
+    var toggleBtn = document.getElementById('sidebarToggle');
+    var sidebar   = document.getElementById('appSidebar');
+    var overlay   = document.getElementById('sidebarOverlay');
+
+    if (!toggleBtn || !sidebar || !overlay) return;
+
+    function openSidebar() {
+        sidebar.classList.add('sidebar-open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    toggleBtn.addEventListener('click', function () {
+        if (sidebar.classList.contains('sidebar-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // Auto-close on nav link click (for SPA-like feel)
+    sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 992) closeSidebar();
+        });
+    });
+
+    // Auto-close when resizing to desktop
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 992) {
+            closeSidebar();
+            document.body.style.overflow = '';
+        }
+    });
+})();
+</script>
 </body>
 </html>

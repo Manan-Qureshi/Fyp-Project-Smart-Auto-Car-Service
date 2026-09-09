@@ -4,7 +4,7 @@
 <div class="container-fluid px-4 py-3">
 
     {{-- Header row with title + Book New Service button --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h3 class="fw-bold mb-0">
             <i class="fas fa-calendar-check text-primary me-2"></i>My Bookings
         </h3>
