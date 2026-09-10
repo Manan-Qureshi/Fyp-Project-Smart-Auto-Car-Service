@@ -54,6 +54,16 @@
                     <i class="fas fa-star me-1"></i>Rate Service
                 </button>
             @endif
+        @elseif(!in_array($booking->status, ['cancelled', 'in_progress', 'completed']) && $booking->created_at->diffInMinutes(now()) <= 15)
+            {{-- Cancel button: only visible within 15 minutes of booking creation --}}
+            <form action="{{ route('bookings.cancel', $booking) }}" method="POST"
+                  onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold shadow-sm">
+                    <i class="fas fa-times-circle me-1"></i>Cancel
+                </button>
+            </form>
         @else
             <span class="text-muted small">—</span>
         @endif

@@ -216,7 +216,7 @@ class BookingController extends Controller
             return back()->with('error', 'Cannot cancel a booking that is In-Progress or Completed.');
         }
 
-        if ($booking->created_at->diffInMinutes(now()) > 15) {
+        if ($booking->created_at->diffInMinutes(now(), true) > 15) {
             return back()->with('error', 'You can only cancel a booking within 15 minutes of creating it.');
         }
 
@@ -242,6 +242,14 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        if ($booking->commission) {
+            $booking->commission->update([
+                'total_amount'      => 0,
+                'commission_amount' => 0,
+                'provider_earning'   => 0,
+            ]);
+        }
 
         if ($refundProcessed) {
             // Notify admins about payment refund

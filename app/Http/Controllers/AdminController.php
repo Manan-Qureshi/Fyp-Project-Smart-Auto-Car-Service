@@ -146,8 +146,9 @@ class AdminController extends Controller
         }
 
         $commissions    = (clone $query)->latest()->paginate(5)->appends($request->all());
-        $totalRevenue   = (clone $query)->sum('commission_amount');
-        $totalEarnings  = (clone $query)->sum('provider_earning');
+        $activeQuery    = (clone $query)->whereHas('booking', fn($q) => $q->where('status', '!=', 'cancelled'));
+        $totalRevenue   = (clone $activeQuery)->sum('commission_amount');
+        $totalEarnings  = (clone $activeQuery)->sum('provider_earning');
 
         $bookingQuery   = Booking::where('status', 'completed');
         if ($startDate && $endDate) {

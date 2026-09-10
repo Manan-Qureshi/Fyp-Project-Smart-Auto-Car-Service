@@ -31,10 +31,12 @@ class PaymentController extends Controller
 
         // Convert PKR amount to USD cents for Stripe (Stripe does not support PKR).
         // The original PKR price is preserved in metadata and displayed in the app UI.
-        $pkrPrice     = (float)$bookingData['final_price'];
-        $usdCents     = (int) round(($pkrPrice / self::PKR_TO_USD) * 100);
-        $usdFeeCents  = (int) round($usdCents * 0.10); // 10% platform commission
+        $pkrPrice = (float)$bookingData['final_price'];
+        $usdCents = (int) round(($pkrPrice / self::PKR_TO_USD) * 100);
 
+        // Funds are held in the platform account after checkout.
+        // The provider is paid via Stripe Transfer only after the booking is completed
+        // (see disburseProviderPayout called from BookingController@updateStatus).
         $metadata = [
             'user_id'             => (string)$bookingData['user_id'],
             'service_id'          => (string)$bookingData['service_id'],
@@ -46,19 +48,6 @@ class PaymentController extends Controller
             'notes'               => (string)($bookingData['notes'] ?? ''),
             'final_price'         => (string)$pkrPrice, // stored in PKR
         ];
-
-        // Build payment_intent_data: route funds to provider's connected Stripe account
-        // if they have completed Stripe Connect onboarding.
-        $paymentIntentData = [];
-        if (!empty($provider->stripe_account_id) && $provider->stripe_onboarding_completed) {
-            $paymentIntentData = [
-                'transfer_data'        => [
-                    'destination' => $provider->stripe_account_id,
-                ],
-                'application_fee_amount' => $usdFeeCents,
-                'description' => "Booking #{$bookingData['service_provider_id']} – Rs. " . number_format($pkrPrice, 0) . ' PKR',
-            ];
-        }
 
         $sessionParams = [
             'payment_method_types' => ['card'],
@@ -79,10 +68,6 @@ class PaymentController extends Controller
             'cancel_url'  => route('payment.cancel'),
             'metadata'    => $metadata,
         ];
-
-        if (!empty($paymentIntentData)) {
-            $sessionParams['payment_intent_data'] = $paymentIntentData;
-        }
 
         $session = Session::create($sessionParams);
 

@@ -31,8 +31,8 @@ class DashboardController extends Controller
 
         try {
             $providers    = ServiceProvider::with('owner')->withCount('bookings')->latest()->get();
-            $totalRevenue = Commission::sum('commission_amount') ?? 0;
-            $totalEarning = Commission::sum('provider_earning') ?? 0;
+            $totalRevenue = Commission::whereHas('booking', fn($q) => $q->where('status', '!=', 'cancelled'))->sum('commission_amount') ?? 0;
+            $totalEarning = Commission::whereHas('booking', fn($q) => $q->where('status', '!=', 'cancelled'))->sum('provider_earning') ?? 0;
             $totalBookings = Booking::where('status', '!=', 'payment_pending')->count();
 
             $filterDate     = $request->get('filter_date');

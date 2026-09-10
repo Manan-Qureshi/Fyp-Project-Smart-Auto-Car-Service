@@ -81,29 +81,46 @@
                             <th>Total</th>
                             <th>Commission (10%)</th>
                             <th>Provider Earns</th>
-                            <th>Payout Status</th>
+                            <th>Status</th>
                             <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
                     @foreach($commissions as $c)
+                    @php
+                        $bookingStatus = optional($c->booking)->status ?? 'unknown';
+                        $isCancelled = $bookingStatus === 'cancelled';
+                        $statusColor = match($bookingStatus) {
+                            'confirmed'   => 'success',
+                            'accepted'    => 'info',
+                            'assigned'    => 'info',
+                            'in_progress' => 'primary',
+                            'completed'   => 'dark',
+                            'cancelled'   => 'danger',
+                            default       => 'secondary',
+                        };
+                    @endphp
                     <tr>
                         <td class="fw-semibold">#{{ str_pad(optional($c->booking)->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ optional($c->serviceProvider)->business_name }}</td>
                         <td>{{ optional(optional($c->booking)->service)->name }}</td>
-                        <td>PKR {{ number_format($c->total_amount) }}</td>
-                        <td class="text-success fw-semibold">PKR {{ number_format($c->commission_amount) }}</td>
-                        <td>PKR {{ number_format($c->provider_earning) }}</td>
                         <td>
-                            @if(!empty($c->stripe_transfer_id))
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small" title="{{ $c->stripe_transfer_id }}">
-                                    <i class="fas fa-check-circle me-1"></i>Stripe Disbursed
-                                </span>
+                            @if($isCancelled)
+                                <span class="text-muted text-decoration-line-through">PKR {{ number_format($c->total_amount) }}</span>
                             @else
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2 py-1 small">
-                                    <i class="fas fa-clock me-1"></i>Pending Settlement
-                                </span>
+                                PKR {{ number_format($c->total_amount) }}
                             @endif
+                        </td>
+                        <td class="{{ $isCancelled ? 'text-muted' : 'text-success fw-semibold' }}">
+                            PKR {{ number_format($isCancelled ? 0 : $c->commission_amount) }}
+                        </td>
+                        <td class="{{ $isCancelled ? 'text-muted' : '' }}">
+                            PKR {{ number_format($isCancelled ? 0 : $c->provider_earning) }}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $statusColor }} rounded-pill px-3 py-1 text-capitalize">
+                                {{ str_replace('_', ' ', $bookingStatus) }}
+                            </span>
                         </td>
                         <td class="text-muted small">{{ $c->created_at->format('d M Y, h:i A') }}</td>
                     </tr>
