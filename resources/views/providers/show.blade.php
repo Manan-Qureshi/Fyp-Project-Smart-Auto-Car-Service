@@ -27,7 +27,7 @@
                         <i class="fas fa-star {{ $i <= round($provider->avg_rating) ? 'text-warning' : 'text-secondary' }}"></i>
                     @endfor
                     <span class="ms-1 text-muted small">{{ $provider->avg_rating }}/5 · {{ $provider->rating_count }}
-                        reviews</span>
+                        ratings</span>
                 </div>
             </div>
             @if($provider->description)
@@ -153,14 +153,14 @@
             </div> {{-- End col-lg-4 --}}
         </div> {{-- End row --}}
 
-        {{-- Reviews --}}
+        {{-- Ratings --}}
         @if($provider->ratings->count() > 0)
-            <h5 class="fw-semibold mt-5 mb-3"><i class="fas fa-comments text-warning me-2"></i>Customer Reviews</h5>
+            <h5 class="fw-semibold mt-5 mb-3"><i class="fas fa-star text-warning me-2"></i>Customer Ratings</h5>
             <div class="row g-3">
                 @foreach($provider->ratings->take(6) as $rating)
                     <div class="col-md-6">
                         <div class="glass-card p-3 rounded-3">
-                            <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode($rating->customer->name ?? 'User') }}&background=667eea&color=fff"
                                     class="rounded-circle" width="32" height="32">
                                 <div>
@@ -174,9 +174,6 @@
                                 </div>
                                 <span class="ms-auto text-muted small">{{ $rating->created_at->diffForHumans() }}</span>
                             </div>
-                            @if($rating->review)
-                                <p class="small text-muted mb-0">{{ $rating->review }}</p>
-                            @endif
                         </div>
                     </div>
                 @endforeach

@@ -17,7 +17,6 @@ class ServiceProvider extends Model
         'address',
         'latitude',
         'longitude',
-        'service_radius_km',
         'logo',
         'is_active',
         'open_time',

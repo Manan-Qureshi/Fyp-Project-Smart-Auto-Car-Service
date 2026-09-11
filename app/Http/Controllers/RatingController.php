@@ -17,7 +17,6 @@ class RatingController extends Controller
 
         $request->validate([
             'rating' => 'required|integer|between:1,5',
-            'review' => 'nullable|string|max:1000',
         ]);
 
         Rating::create([
@@ -25,7 +24,6 @@ class RatingController extends Controller
             'user_id'             => Auth::id(),
             'service_provider_id' => $booking->service_provider_id,
             'rating'              => $request->rating,
-            'review'              => $request->review,
         ]);
 
         return back()->with('success', 'Thank you for your rating!');

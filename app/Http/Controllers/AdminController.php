@@ -42,7 +42,6 @@ class AdminController extends Controller
             'address'           => 'required|string',
             'latitude'          => 'required|numeric|between:-90,90',
             'longitude'         => 'required|numeric|between:-180,180',
-            'service_radius_km' => 'nullable|numeric|min:1|max:500',
 
             'email'             => 'required|email|unique:users,email',
             'name'              => 'required|string',
@@ -70,7 +69,6 @@ class AdminController extends Controller
             'address'           => $data['address'],
             'latitude'          => $data['latitude'],
             'longitude'         => $data['longitude'],
-            'service_radius_km' => $data['service_radius_km'] ?? 20,
             'logo'              => $data['logo'] ?? null,
             'is_active'         => true,
             'open_time'         => $data['open_time'],
@@ -94,7 +92,6 @@ class AdminController extends Controller
             'address'           => 'required|string',
             'latitude'          => 'required|numeric|between:-90,90',
             'longitude'         => 'required|numeric|between:-180,180',
-            'service_radius_km' => 'nullable|numeric|min:1|max:500',
             'open_time'         => 'required',
             'close_time'        => 'required',
         ]);

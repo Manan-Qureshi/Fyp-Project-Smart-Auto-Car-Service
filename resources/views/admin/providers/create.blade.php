@@ -44,9 +44,8 @@
             <!-- Business Details Section -->
             <h6 class="fw-semibold text-muted text-uppercase mb-2" style="font-size:.7rem">2. Business Details</h6>
             <div class="row g-2 mb-2">
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Business Name *</label><input type="text" name="business_name" class="form-control form-control-sm rounded-3" required value="{{ old('business_name') }}"></div>
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Phone</label><input type="text" name="phone" class="form-control form-control-sm rounded-3" value="{{ old('phone') }}"></div>
-                <div class="col-md-4"><label class="form-label fw-semibold small mb-1">Service Radius (km)</label><input type="number" name="service_radius_km" class="form-control form-control-sm rounded-3" value="{{ old('service_radius_km', 20) }}" min="1"></div>
+                <div class="col-md-6"><label class="form-label fw-semibold small mb-1">Business Name *</label><input type="text" name="business_name" class="form-control form-control-sm rounded-3" required value="{{ old('business_name') }}"></div>
+                <div class="col-md-6"><label class="form-label fw-semibold small mb-1">Phone</label><input type="text" name="phone" class="form-control form-control-sm rounded-3" value="{{ old('phone') }}"></div>
             </div>
             
             <div class="row g-2 mb-3">

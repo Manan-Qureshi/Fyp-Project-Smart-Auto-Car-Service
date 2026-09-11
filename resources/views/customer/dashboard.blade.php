@@ -78,13 +78,7 @@
                                 @endfor
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Review <span class="text-muted">(optional)</span>
-                            </label>
-                            <textarea name="review" class="form-control rounded-3" rows="3"
-                                      placeholder="Share your experience..."></textarea>
-                        </div>
+
                         <button type="submit" class="btn btn-warning w-100 rounded-pill fw-bold">
                             <i class="fas fa-check me-2"></i>Submit Rating
                         </button>
