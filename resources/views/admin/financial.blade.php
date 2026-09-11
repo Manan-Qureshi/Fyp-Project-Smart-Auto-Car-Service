@@ -85,8 +85,8 @@
                             <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody>
-                    @foreach($commissions as $c)
+                    <tbody id="commissions-tbody">
+                    @foreach($commissions as $i => $c)
                     @php
                         $bookingStatus = optional($c->booking)->status ?? 'unknown';
                         $isCancelled = $bookingStatus === 'cancelled';
@@ -100,7 +100,7 @@
                             default       => 'secondary',
                         };
                     @endphp
-                    <tr>
+                    <tr class="commission-row {{ $i >= 5 ? 'hidden-row d-none' : '' }}">
                         <td class="fw-semibold">#{{ str_pad(optional($c->booking)->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ optional($c->serviceProvider)->business_name }}</td>
                         <td>{{ optional(optional($c->booking)->service)->name }}</td>
@@ -128,9 +128,15 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">
-                {{ $commissions->links() }}
+            @if($commissions->count() > 5)
+            <div class="text-center mt-3" id="show-all-wrap">
+                <button id="show-all-btn" onclick="showAllCommissions()"
+                    class="btn btn-outline-secondary rounded-pill px-4 py-2 shadow-sm"
+                    title="Show all records">
+                    <i class="fas fa-chevron-down me-1"></i> Show All ({{ $commissions->count() }} records)
+                </button>
             </div>
+            @endif
         @else
             <div class="text-center py-5">
                 <div class="mb-3">
@@ -143,6 +149,17 @@
 
 @push('scripts')
 <script>
+    function showAllCommissions() {
+        document.querySelectorAll('.hidden-row').forEach(function(row) {
+            row.classList.remove('d-none');
+            row.style.opacity = '0';
+            row.style.transition = 'opacity 0.3s ease';
+            setTimeout(function() { row.style.opacity = '1'; }, 10);
+        });
+        var wrap = document.getElementById('show-all-wrap');
+        if (wrap) wrap.style.display = 'none';
+    }
+
     setInterval(function(){
         fetch(window.location.href, {
             headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}

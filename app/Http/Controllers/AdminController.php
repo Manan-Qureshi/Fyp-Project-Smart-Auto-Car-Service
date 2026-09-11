@@ -142,7 +142,7 @@ class AdminController extends Controller
             $query->where('service_provider_id', $providerId);
         }
 
-        $commissions    = (clone $query)->latest()->paginate(5)->appends($request->all());
+        $commissions    = (clone $query)->latest()->get();
         $activeQuery    = (clone $query)->whereHas('booking', fn($q) => $q->where('status', '!=', 'cancelled'));
         $totalRevenue   = (clone $activeQuery)->sum('commission_amount');
         $totalEarnings  = (clone $activeQuery)->sum('provider_earning');
