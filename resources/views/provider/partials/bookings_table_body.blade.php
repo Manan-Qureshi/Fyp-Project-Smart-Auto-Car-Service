@@ -14,7 +14,6 @@
         'cancelled'       => 'danger',
         default           => 'secondary',
     };
-@php
     $appointmentDate = $b->appointment_time ? \Carbon\Carbon::parse($b->appointment_time)->toDateString() : null;
     $isFutureDate    = $appointmentDate && $appointmentDate > now()->toDateString();
     $canAssign       = !in_array($b->status, ['completed', 'cancelled']) && count($workers ?? []) && !$isFutureDate;
