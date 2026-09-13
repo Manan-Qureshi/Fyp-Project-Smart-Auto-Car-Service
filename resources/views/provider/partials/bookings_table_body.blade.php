@@ -14,7 +14,10 @@
         'cancelled'       => 'danger',
         default           => 'secondary',
     };
-    $canAssign = !in_array($b->status, ['completed', 'cancelled']) && count($workers ?? []);
+@php
+    $appointmentDate = $b->appointment_time ? \Carbon\Carbon::parse($b->appointment_time)->toDateString() : null;
+    $isFutureDate    = $appointmentDate && $appointmentDate > now()->toDateString();
+    $canAssign       = !in_array($b->status, ['completed', 'cancelled']) && count($workers ?? []) && !$isFutureDate;
 @endphp
 <tr>
     <td class="fw-semibold">#{{ str_pad($b->id, 5, '0', STR_PAD_LEFT) }}</td>
@@ -33,7 +36,11 @@
             </div>
         @endif
 
-        @if($canAssign)
+        @if($isFutureDate && !in_array($b->status, ['completed', 'cancelled']))
+            <span class="badge bg-secondary rounded-pill px-2 py-1 small" title="Worker assignment opens on the day of service">
+                <i class="fas fa-lock me-1"></i>Opens on Service Day
+            </span>
+        @elseif($canAssign)
             <button class="btn btn-sm btn-outline-primary rounded-pill text-nowrap"
                     type="button"
                     data-bs-toggle="collapse"

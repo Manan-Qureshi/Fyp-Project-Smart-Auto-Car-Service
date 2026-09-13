@@ -358,7 +358,7 @@
                         var d = n.data;
                         var li = document.createElement('li');
                         li.className = 'notif-item border-bottom px-3 py-2';
-                        li.innerHTML = '<div class="d-flex align-items-start gap-2">' +
+                        var itemHtml = '<div class="d-flex align-items-start gap-2">' +
                             '<i class="fas ' + (d.icon || 'fa-bell') + ' mt-1 ' + colorClass(d.color) + '"></i>' +
                             '<div class="flex-grow-1">' +
                                 '<div class="fw-semibold small">' + (d.title || 'Notification') + '</div>' +
@@ -366,6 +366,11 @@
                                 '<div class="text-muted" style="font-size:.7rem;">' + (n.created || '') + '</div>' +
                             '</div>' +
                         '</div>';
+                        if (d.url) {
+                            li.innerHTML = '<a href="' + d.url + '" class="text-decoration-none text-dark d-block">' + itemHtml + '</a>';
+                        } else {
+                            li.innerHTML = itemHtml;
+                        }
                         dropdown.appendChild(li);
                     });
                 } else {
