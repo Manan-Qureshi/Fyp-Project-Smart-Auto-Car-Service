@@ -48,6 +48,9 @@
             <a href="{{ route('admin.financial') }}" class="nav-link {{ request()->routeIs('admin.financial') ? 'active' : '' }}">
                 <i class="fas fa-chart-line"></i> Payments
             </a>
+            <a href="{{ route('admin.ratings.index') }}" class="nav-link {{ request()->routeIs('admin.ratings.*') ? 'active' : '' }}">
+                <i class="fas fa-comment-dots"></i> View Feedback
+            </a>
         @endif
 
         {{-- PROVIDER --}}

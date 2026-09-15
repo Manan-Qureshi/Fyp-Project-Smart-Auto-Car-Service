@@ -182,10 +182,15 @@ class AdminController extends Controller
             $query->where('feedback_type', $request->type);
         }
 
-        $ratings = $query->latest()->paginate(15);
-        $totalComplaints = \App\Models\Rating::where('feedback_type', 'complaint')->count();
-        $totalGeneral = \App\Models\Rating::where('feedback_type', 'general')->count();
+        if ($request->filled('provider_id')) {
+            $query->where('service_provider_id', $request->provider_id);
+        }
 
-        return view('admin.ratings.index', compact('ratings', 'totalComplaints', 'totalGeneral'));
+        $ratings         = $query->latest()->paginate(15);
+        $totalComplaints = \App\Models\Rating::where('feedback_type', 'complaint')->count();
+        $totalGeneral    = \App\Models\Rating::where('feedback_type', 'general')->count();
+        $providers       = \App\Models\ServiceProvider::orderBy('business_name')->get();
+
+        return view('admin.ratings.index', compact('ratings', 'totalComplaints', 'totalGeneral', 'providers'));
     }
 }
