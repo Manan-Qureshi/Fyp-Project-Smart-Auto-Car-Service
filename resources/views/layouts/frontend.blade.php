@@ -59,6 +59,7 @@
         @yield('content')
     </div>
 
+    @if(request()->is('/'))
     <!-- Footer -->
     <footer class="smart-footer" id="smartFooter">
         <div class="footer-narrow">
@@ -126,6 +127,7 @@
             </div>
         </div>
     </footer>
+    @endif
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 

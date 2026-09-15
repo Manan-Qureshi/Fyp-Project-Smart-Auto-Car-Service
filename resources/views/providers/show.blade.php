@@ -119,7 +119,7 @@
 
             {{-- Right Column: Shopping Cart --}}
             <div class="col-lg-4">
-                <div class="glass-card p-4 rounded-4 shadow-sm position-sticky" style="top:2rem">
+                <div class="glass-card p-4 rounded-4 shadow-sm position-sticky" style="top:4.5rem">
                     <h5 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-shopping-cart text-primary me-2"></i>Cart</span>
                         <span class="badge bg-primary rounded-pill" id="cartItemCount">0</span>
@@ -152,33 +152,6 @@
                 </div>
             </div> {{-- End col-lg-4 --}}
         </div> {{-- End row --}}
-
-        {{-- Ratings --}}
-        @if($provider->ratings->count() > 0)
-            <h5 class="fw-semibold mt-5 mb-3"><i class="fas fa-star text-warning me-2"></i>Customer Ratings</h5>
-            <div class="row g-3">
-                @foreach($provider->ratings->take(6) as $rating)
-                    <div class="col-md-6">
-                        <div class="glass-card p-3 rounded-3">
-                            <div class="d-flex align-items-center gap-2">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($rating->customer->name ?? 'User') }}&background=667eea&color=fff"
-                                    class="rounded-circle" width="32" height="32">
-                                <div>
-                                    <div class="fw-semibold small">{{ $rating->customer->name ?? 'Customer' }}</div>
-                                    <div>
-                                        @for($i = 1; $i <= 5; $i++)
-                                            <i class="fas fa-star {{ $i <= $rating->rating ? 'text-warning' : 'text-secondary' }}"
-                                                style="font-size:.75rem"></i>
-                                        @endfor
-                                    </div>
-                                </div>
-                                <span class="ms-auto text-muted small">{{ $rating->created_at->diffForHumans() }}</span>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endif
     </div>
     </div>
 

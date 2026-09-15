@@ -44,28 +44,19 @@
                 <thead class="table-light">
                     <tr>
                         <th class="ps-3">ID</th>
-                        <th>Type</th>
                         <th>Customer</th>
                         <th>Service & Provider</th>
+                        <th>Worker</th>
                         <th>Rating</th>
                         <th>Review / Complaint</th>
-                        <th>Submitted At</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($ratings as $rating)
+                    @php $worker = optional($rating->booking)->worker; @endphp
                     <tr>
-                        <td class="ps-3 fw-bold text-muted">#{{ str_pad($rating->id, 5, '0', STR_PAD_LEFT) }}</td>
-                        <td>
-                            @if($rating->feedback_type === 'complaint')
-                                <span class="badge bg-danger rounded-pill px-3 py-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Complaint
-                                </span>
-                            @else
-                                <span class="badge bg-success rounded-pill px-3 py-1">
-                                    <i class="fas fa-comment-alt me-1"></i>General
-                                </span>
-                            @endif
+                        <td class="ps-3">
+                            <div class="fw-bold text-muted">#{{ str_pad($rating->id, 5, '0', STR_PAD_LEFT) }}</div>
                         </td>
                         <td>
                             <div class="fw-semibold">{{ optional($rating->customer)->name ?? 'Guest' }}</div>
@@ -76,24 +67,41 @@
                             <small class="text-muted"><i class="fas fa-store me-1"></i>{{ optional($rating->serviceProvider)->business_name }}</small>
                         </td>
                         <td>
+                            @if($worker)
+                                <div class="fw-semibold">{{ $worker->name }}</div>
+                                <small class="text-muted">{{ $worker->email }}</small>
+                            @else
+                                <span class="text-muted fst-italic small">Not assigned</span>
+                            @endif
+                        </td>
+                        <td>
                             <span class="badge bg-warning text-dark rounded-pill px-2 py-1 fw-bold">
                                 {{ $rating->rating }} ★
                             </span>
                         </td>
-                        <td style="max-width: 280px;">
+                        <td style="max-width: 260px;">
                             @if($rating->review)
-                                <span class="text-dark">{{ $rating->review }}</span>
+                                @php $review = $rating->review; $isLong = strlen($review) > 80; @endphp
+                                @if($isLong)
+                                    <span class="review-short-{{ $rating->id }}">{{ Str::limit($review, 80) }}</span>
+                                    <span class="review-full-{{ $rating->id }} d-none">{{ $review }}</span>
+                                    <button class="btn btn-link btn-sm p-0 ms-1 text-primary"
+                                            onclick="toggleReview({{ $rating->id }})"
+                                            id="toggle-btn-{{ $rating->id }}"
+                                            title="Show full message">
+                                        <i class="fas fa-chevron-down" id="toggle-icon-{{ $rating->id }}"></i>
+                                    </button>
+                                @else
+                                    {{ $review }}
+                                @endif
                             @else
                                 <span class="text-muted fst-italic">No details provided</span>
                             @endif
                         </td>
-                        <td class="small text-muted">
-                            {{ $rating->created_at ? $rating->created_at->format('d M Y, h:i A') : 'N/A' }}
-                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <i class="fas fa-comment-slash fa-3x mb-3 opacity-50 d-block"></i>
                             <h5>No feedback found</h5>
                         </td>
@@ -109,4 +117,24 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+function toggleReview(id) {
+    var shortEl  = document.querySelector('.review-short-' + id);
+    var fullEl   = document.querySelector('.review-full-' + id);
+    var icon     = document.getElementById('toggle-icon-' + id);
+    var expanded = fullEl.classList.contains('d-none');
+    if (expanded) {
+        shortEl.classList.add('d-none');
+        fullEl.classList.remove('d-none');
+        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+    } else {
+        shortEl.classList.remove('d-none');
+        fullEl.classList.add('d-none');
+        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+    }
+}
+</script>
+@endpush
 @endsection

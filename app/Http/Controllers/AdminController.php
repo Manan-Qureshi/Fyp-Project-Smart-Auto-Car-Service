@@ -176,7 +176,7 @@ class AdminController extends Controller
 
     public function ratings(Request $request)
     {
-        $query = \App\Models\Rating::with(['customer', 'serviceProvider', 'booking.service']);
+        $query = \App\Models\Rating::with(['customer', 'serviceProvider', 'booking.service', 'booking.worker']);
 
         if ($request->filled('type') && in_array($request->type, ['general', 'complaint'])) {
             $query->where('feedback_type', $request->type);

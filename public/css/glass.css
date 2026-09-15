@@ -16,14 +16,14 @@
 * { font-family: 'Inter', sans-serif; }
 
 html {
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
     font-family: 'Inter', sans-serif;
     background: #f0f2f5;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 

@@ -25,7 +25,7 @@
         <div class="row g-4">
             <!-- Services Column -->
             <div class="col-lg-9">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="fw-bold mb-0">Available Services</h4>
                     @php $categories = $services->pluck('category')->filter()->unique()->sort(); @endphp
                     @if($categories->count() > 0)
@@ -35,61 +35,86 @@
                             @foreach($categories as $cat)
                                 <option value="{{ strtolower(trim($cat)) }}">{{ $cat }}</option>
                             @endforeach
-                            <option value="uncategorized">Uncategorized</option>
+                            <option value="general services">General Services</option>
                         </select>
                     </div>
                     @endif
                 </div>
 
-                <div class="row g-4">
-                    @forelse($services as $service)
-                        <div class="col-md-4 service-card-wrapper" data-category="{{ $service->category ? strtolower(trim($service->category)) : 'uncategorized' }}">
-                            <div class="glass-card h-100 text-center hover-up transition-all border-0 shadow-sm bg-white overflow-hidden d-flex flex-column">
-                                @if($service->image)
-                                    <div style="height: 200px; width: 100%; overflow: hidden;">
-                                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                @php
+                    $groupedServices = $services->groupBy(function($s) {
+                        return $s->category ? trim($s->category) : 'General Services';
+                    });
+                @endphp
+
+                @forelse($groupedServices as $categoryName => $catServices)
+                    @php $slug = Str::slug($categoryName); @endphp
+                    <div class="category-block mb-5" data-category="{{ strtolower(trim($categoryName)) }}">
+                        <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-wrench text-primary me-2"></i>{{ $categoryName }}</h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary ms-2 rounded-pill px-3 py-1">{{ $catServices->count() }} {{ Str::plural('service', $catServices->count()) }}</span>
+                        </div>
+
+                        <div class="row g-4">
+                            @foreach($catServices as $index => $service)
+                                <div class="col-md-4 service-card-wrapper {{ $index >= 3 ? 'd-none cat-extra-' . $slug : '' }}" data-category="{{ strtolower(trim($categoryName)) }}">
+                                    <div class="glass-card h-100 text-center hover-up transition-all border-0 shadow-sm bg-white overflow-hidden d-flex flex-column">
+                                        @if($service->image)
+                                            <div style="height: 180px; width: 100%; overflow: hidden;">
+                                                <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                                            </div>
+                                            <div class="p-4 flex-grow-1 d-flex flex-column">
+                                        @else
+                                            <div class="p-4 flex-grow-1 d-flex flex-column">
+                                                <div class="icon-box mb-3 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                                    style="width: 70px; height: 70px; flex-shrink: 0;">
+                                                    <i class="fas {{ $service->type == 'custom' ? 'fa-star' : 'fa-wrench' }} fa-2x text-primary"></i>
+                                                </div>
+                                        @endif
+                                        <h5 class="fw-bold mb-2">{{ $service->name }}</h5>
+                                        <p class="text-muted mb-3 small flex-grow-1">
+                                            {{ Str::limit($service->description ?? 'Professional service for your vehicle.', 75) }}
+                                        </p>
+
+                                        <h4 class="text-primary fw-bold mb-3">
+                                            @if(session('selected_car_model'))
+                                                PKR {{ number_format($service->base_price * session('selected_car_model.price_modifier', 1)) }}
+                                            @else
+                                                <div class="fs-6 text-muted fw-normal">Starts from</div>
+                                                PKR {{ number_format($service->base_price) }}
+                                            @endif
+                                        </h4>
+
+                                        <button type="button" class="btn btn-outline-primary rounded-pill px-4 w-100 add-to-cart-btn mt-auto"
+                                            data-service-id="{{ $service->id }}">
+                                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                                        </button>
+                                        </div> <!-- Close content wrapper -->
                                     </div>
-                                    <div class="p-4 flex-grow-1 d-flex flex-column">
-                                @else
-                                    <div class="p-4 flex-grow-1 d-flex flex-column">
-                                        <div class="icon-box mb-4 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
-                                            style="width: 80px; height: 80px; flex-shrink: 0;">
-                                            <i class="fas {{ $service->type == 'custom' ? 'fa-star' : 'fa-wrench' }} fa-2x text-primary"></i>
-                                        </div>
-                                @endif
-                                <h4 class="fw-bold mb-3">{{ $service->name }}</h4>
-                                <p class="text-muted mb-4 small flex-grow-1">
-                                    {{ Str::limit($service->description ?? 'Professional service for your vehicle.', 80) }}
-                                </p>
+                                </div>
+                            @endforeach
+                        </div>
 
-                                <h3 class="text-primary fw-bold mb-3">
-                                    @if(session('selected_car_model'))
-                                        PKR {{ number_format($service->base_price * session('selected_car_model.price_modifier', 1)) }}
-                                    @else
-                                        <div class="fs-6 text-muted fw-normal">Starts from</div>
-                                        PKR {{ number_format($service->base_price) }}
-                                    @endif
-                                </h3>
-
-                                <button type="button" class="btn btn-outline-primary rounded-pill px-4 w-100 add-to-cart-btn mt-auto"
-                                    data-service-id="{{ $service->id }}">
-                                    <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        @if($catServices->count() > 3)
+                            <div class="text-center mt-3">
+                                <button class="btn btn-outline-primary btn-sm rounded-pill px-4 py-2 toggle-cat-btn" data-target="cat-extra-{{ $slug }}">
+                                    <span class="btn-text">Show All {{ $catServices->count() }} Services</span>
+                                    <i class="fas fa-chevron-down ms-1 toggle-icon"></i>
                                 </button>
-                                </div> <!-- Close .p-4 content wrapper -->
                             </div>
-                        </div>
-                    @empty
-                        <div class="col-12 text-center py-5">
-                            <p class="text-muted">No services found.</p>
-                        </div>
-                    @endforelse
-                </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">No services found.</p>
+                    </div>
+                @endforelse
             </div>
 
             <!-- Cart Sidebar -->
             <div class="col-lg-3">
                 <div class="sticky-top" style="top: 7rem; z-index: 10;">
-                    <div class="bg-white p-4 rounded-4 shadow-sm cart-sidebar" style="position: static; max-height: calc(100vh - 120px); overflow-y: auto;">
+                    <div class="bg-white p-4 rounded-4 shadow-sm cart-sidebar" style="max-height: calc(100vh - 120px); overflow-y: auto;">
                         <h5 class="fw-bold mb-4 d-flex justify-content-between align-items-center">
                             Your Cart
                             <span
@@ -119,11 +144,11 @@
                             <div class="border-top pt-3 mb-4">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Subtotal</span>
-                                    <span class="fw-bold">${{ number_format($total) }}</span>
+                                    <span class="fw-bold">PKR {{ number_format($total) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Total</span>
-                                    <span class="fw-bold fs-5 text-primary">${{ number_format($total) }}</span>
+                                    <span class="fw-bold fs-5 text-primary">PKR {{ number_format($total) }}</span>
                                 </div>
                             </div>
 
@@ -137,57 +162,6 @@
                             </div>
                         @endif
                     </div>
-
-                    <!-- Custom Request Shortcut Button -->
-                    <a href="#custom-request-form" class="btn btn-outline-primary w-100 rounded-pill py-3 mt-4 shadow-sm fw-bold d-flex align-items-center justify-content-center" style="border-width: 2px;">
-                        <i class="fas fa-hammer me-2"></i> Custom Request Form
-                    </a>
-                </div>
-            </div>
-        </div>
-        <!-- Custom Service Request Form -->
-        <div id="custom-request-form" class="row justify-content-center mt-5 pt-4">
-            <div class="col-lg-8">
-                <div class="glass-card p-5 border-0 shadow-lg">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-hammer fa-3x text-primary mb-3"></i>
-                        <h3 class="fw-bold">Need Something Custom?</h3>
-                        <p class="text-muted">Describe your issue, and we'll propose a solution.</p>
-                    </div>
-
-                    <form action="{{ route('contact.store') }}" method="POST">
-                        @csrf
-                        @guest
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" name="name" class="form-control" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" name="email" class="form-control" required>
-                                </div>
-                            </div>
-                        @endguest
-
-                        <div class="mb-3">
-                            <label class="form-label">Subject</label>
-                            <input type="text" name="subject" class="form-control"
-                                placeholder="e.g., Engine Noise, Modification Request" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="message" class="form-control" rows="4"
-                                placeholder="Please describe the service you need..." required></textarea>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary rounded-pill btn-lg shadow-sm">
-                                <i class="fas fa-paper-plane me-2"></i> Send Custom Request
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -260,11 +234,43 @@
             if(categoryFilter) {
                 categoryFilter.addEventListener('change', function() {
                     const selected = this.value;
-                    document.querySelectorAll('.service-card-wrapper').forEach(card => {
-                        card.style.display = (selected === 'all' || card.dataset.category === selected) ? '' : 'none';
+                    document.querySelectorAll('.category-block').forEach(block => {
+                        const blockCat = block.dataset.category;
+                        block.style.display = (selected === 'all' || blockCat === selected) ? '' : 'none';
                     });
                 });
             }
+
+            // Expand / Collapse Extra Services per Category
+            document.querySelectorAll('.toggle-cat-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetClass = this.dataset.target;
+                    const extraCards = document.querySelectorAll('.' + targetClass);
+                    const icon = this.querySelector('.toggle-icon');
+                    const textSpan = this.querySelector('.btn-text');
+
+                    const isHidden = extraCards[0] && extraCards[0].classList.contains('d-none');
+
+                    extraCards.forEach(card => {
+                        if (isHidden) {
+                            card.classList.remove('d-none');
+                        } else {
+                            card.classList.add('d-none');
+                        }
+                    });
+
+                    if (isHidden) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                        if (textSpan) textSpan.textContent = 'Show Less';
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                        const totalCount = extraCards.length + 3;
+                        if (textSpan) textSpan.textContent = `Show All ${totalCount} Services`;
+                    }
+                });
+            });
 
             if (carTypeSelect) {
                 carTypeSelect.addEventListener('change', function () {
