@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
 use App\Models\Worker;
 use App\Models\ServiceProvider;
+use App\Models\Rating;
 
 class ProviderDashboardController extends Controller
 {
@@ -134,5 +135,26 @@ class ProviderDashboardController extends Controller
         }
 
         return back()->with('success', 'Booking updated to ' . ucfirst(str_replace('_', ' ', $request->status)) . '.');
+    }
+
+    public function ratings(Request $request)
+    {
+        $provider = $this->getProvider();
+        if (! $provider) {
+            return view('provider.pending');
+        }
+
+        $query = Rating::with(['customer', 'booking.service', 'booking.worker'])
+            ->where('service_provider_id', $provider->id);
+
+        if ($request->filled('type') && in_array($request->type, ['general', 'complaint'])) {
+            $query->where('feedback_type', $request->type);
+        }
+
+        $ratings         = $query->latest()->paginate(15);
+        $totalComplaints = Rating::where('service_provider_id', $provider->id)->where('feedback_type', 'complaint')->count();
+        $totalGeneral    = Rating::where('service_provider_id', $provider->id)->where('feedback_type', 'general')->count();
+
+        return view('provider.ratings.index', compact('ratings', 'totalComplaints', 'totalGeneral'));
     }
 }

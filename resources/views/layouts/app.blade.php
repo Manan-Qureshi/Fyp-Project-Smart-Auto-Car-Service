@@ -65,6 +65,9 @@
             <a href="{{ route('provider.services.index') }}" class="nav-link {{ request()->routeIs('provider.services.*') ? 'active' : '' }}">
                 <i class="fas fa-tools"></i> My Services
             </a>
+            <a href="{{ route('provider.ratings.index') }}" class="nav-link {{ request()->routeIs('provider.ratings.*') ? 'active' : '' }}">
+                <i class="fas fa-comment-dots"></i> View Feedback
+            </a>
         @endif
 
         {{-- CUSTOMER --}}
