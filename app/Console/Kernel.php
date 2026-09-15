@@ -12,14 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Every minute: alert workers whose service starts within the next 5 minutes
         $schedule->command('notify:upcoming-services')->everyMinute();
-
-        // Every minute: alert providers about bookings starting in 20 minutes missing a worker
         $schedule->command('notify:unassigned-services')->everyMinute();
-
-        // Every minute: alert customers about bookings starting in 20 minutes
         $schedule->command('notify:customer-service-reminders')->everyMinute();
+        $schedule->command('bookings:process-no-shows')->everyMinute();
     }
 
     /**

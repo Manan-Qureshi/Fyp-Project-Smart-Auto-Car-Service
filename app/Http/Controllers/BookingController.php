@@ -216,43 +216,88 @@ class BookingController extends Controller
             return back()->with('error', 'Cannot cancel a booking that is In-Progress or Completed.');
         }
 
-        if ($booking->created_at->diffInMinutes(now(), true) > 15) {
-            return back()->with('error', 'You can only cancel a booking within 15 minutes of creating it.');
-        }
-
         $payment = $booking->payment;
         $refundProcessed = false;
+        $diffMinutes = $booking->created_at->diffInMinutes(now(), true);
 
-        if ($payment && $payment->status === 'paid' && $payment->stripe_payment_intent) {
-            try {
-                \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
-                \Stripe\Refund::create(['payment_intent' => $payment->stripe_payment_intent]);
-                $payment->update(['status' => 'refunded']);
-                $refundProcessed = true;
-            } catch (\Exception $e) {
-                if (!str_contains($e->getMessage(), 'already been refunded')) {
-                    return back()->with('error', 'Refund failed: ' . $e->getMessage());
+        if ($diffMinutes <= 10) {
+            if ($payment && $payment->status === 'paid' && $payment->stripe_payment_intent) {
+                try {
+                    \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+                    \Stripe\Refund::create(['payment_intent' => $payment->stripe_payment_intent]);
+                    $payment->update(['status' => 'refunded']);
+                    $refundProcessed = true;
+                } catch (\Exception $e) {
+                    if (!str_contains($e->getMessage(), 'already been refunded')) {
+                        return back()->with('error', 'Refund failed: ' . $e->getMessage());
+                    }
+                    $payment->update(['status' => 'refunded']);
+                    $refundProcessed = true;
                 }
+            } elseif ($payment && $payment->status === 'paid') {
                 $payment->update(['status' => 'refunded']);
                 $refundProcessed = true;
             }
-        } elseif ($payment && $payment->status === 'paid') {
-            $payment->update(['status' => 'refunded']);
-            $refundProcessed = true;
+
+            if ($booking->commission) {
+                $booking->commission->update([
+                    'total_amount'      => 0,
+                    'commission_amount' => 0,
+                    'provider_earning'   => 0,
+                ]);
+            }
+        } else {
+            if ($payment && $payment->status === 'paid') {
+                if ($payment->stripe_payment_intent) {
+                    try {
+                        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+                        $pkrRefundAmount = round($booking->final_price * 0.90, 2);
+                        $usdRefundCents = (int) round(($pkrRefundAmount / \App\Http\Controllers\PaymentController::PKR_TO_USD) * 100);
+
+                        \Stripe\Refund::create([
+                            'payment_intent' => $payment->stripe_payment_intent,
+                            'amount'         => $usdRefundCents,
+                        ]);
+                        $payment->update(['status' => 'refunded']);
+                        $refundProcessed = true;
+                    } catch (\Exception $e) {
+                        if (!str_contains($e->getMessage(), 'already been refunded')) {
+                            return back()->with('error', 'Refund failed: ' . $e->getMessage());
+                        }
+                        $payment->update(['status' => 'refunded']);
+                        $refundProcessed = true;
+                    }
+                } else {
+                    $payment->update(['status' => 'refunded']);
+                    $refundProcessed = true;
+                }
+
+                $adminCommission = round($booking->final_price * 0.02, 2);
+                $providerEarning = round($booking->final_price * 0.08, 2);
+
+                if ($booking->commission) {
+                    $booking->commission->update([
+                        'total_amount'      => $booking->final_price,
+                        'commission_rate'   => 2.00,
+                        'commission_amount' => $adminCommission,
+                        'provider_earning'  => $providerEarning,
+                    ]);
+                } else {
+                    \App\Models\Commission::create([
+                        'booking_id'          => $booking->id,
+                        'service_provider_id' => $booking->service_provider_id,
+                        'total_amount'        => $booking->final_price,
+                        'commission_rate'     => 2.00,
+                        'commission_amount'   => $adminCommission,
+                        'provider_earning'    => $providerEarning,
+                    ]);
+                }
+            }
         }
 
         $booking->update(['status' => 'cancelled']);
 
-        if ($booking->commission) {
-            $booking->commission->update([
-                'total_amount'      => 0,
-                'commission_amount' => 0,
-                'provider_earning'   => 0,
-            ]);
-        }
-
         if ($refundProcessed) {
-            // Notify admins about payment refund
             $admins = \App\Models\User::where('role', 'admin')->get();
             foreach ($admins as $admin) {
                 $admin->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'payment_refunded'));
