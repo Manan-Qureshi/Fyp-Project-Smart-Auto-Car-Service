@@ -28,6 +28,7 @@ class UnassignedServiceReminder extends Notification
                 'title'      => 'Unassigned Service Alert',
                 'message'    => "Service \"$serviceName\" scheduled at $time (starts in 20 mins) has no worker assigned! Please assign a worker immediately.",
                 'booking_id' => $this->booking->id,
+                'url'        => route('provider.dashboard'),
                 'icon'       => 'fa-user-plus',
                 'color'      => 'danger',
             ];
