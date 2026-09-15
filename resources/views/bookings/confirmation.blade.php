@@ -31,11 +31,11 @@
         The service provider will review your booking and assign a worker shortly.
     </div>
 
-    <div class="d-flex gap-2 mt-3">
-        <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill flex-grow-1">
-            <i class="fas fa-th-large me-2"></i>View My Bookings
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm fw-semibold">
+            <i class="fas fa-th-large me-2"></i>My Bookings
         </a>
-        <a href="{{ route('welcome') }}" class="btn btn-outline-secondary rounded-pill flex-grow-1">
+        <a href="{{ route('welcome') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2 shadow-sm fw-semibold">
             <i class="fas fa-home me-2"></i>Home
         </a>
     </div>

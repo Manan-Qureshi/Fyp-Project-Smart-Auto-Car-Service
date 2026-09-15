@@ -173,4 +173,19 @@ class AdminController extends Controller
 
         return view('admin.financial', compact('commissions', 'totalRevenue', 'totalEarnings', 'totalBookings', 'startDate', 'endDate', 'providers', 'providerId'));
     }
+
+    public function ratings(Request $request)
+    {
+        $query = \App\Models\Rating::with(['customer', 'serviceProvider', 'booking.service']);
+
+        if ($request->filled('type') && in_array($request->type, ['general', 'complaint'])) {
+            $query->where('feedback_type', $request->type);
+        }
+
+        $ratings = $query->latest()->paginate(15);
+        $totalComplaints = \App\Models\Rating::where('feedback_type', 'complaint')->count();
+        $totalGeneral = \App\Models\Rating::where('feedback_type', 'general')->count();
+
+        return view('admin.ratings.index', compact('ratings', 'totalComplaints', 'totalGeneral'));
+    }
 }

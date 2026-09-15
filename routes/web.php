@@ -104,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('cars/model/{model}', [App\Http\Controllers\AdminCarController::class, 'destroyModel'])->name('cars.destroyModel');
 
         Route::get('/financial', [App\Http\Controllers\AdminController::class, 'financial'])->name('financial');
+        Route::get('/ratings', [App\Http\Controllers\AdminController::class, 'ratings'])->name('ratings.index');
     });
 });
 

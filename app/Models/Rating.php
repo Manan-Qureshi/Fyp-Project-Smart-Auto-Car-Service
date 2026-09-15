@@ -14,6 +14,8 @@ class Rating extends Model
         'user_id',
         'service_provider_id',
         'rating',
+        'review',
+        'feedback_type',
     ];
 
     public function booking()

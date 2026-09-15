@@ -17,6 +17,9 @@ class Kernel extends ConsoleKernel
 
         // Every minute: alert providers about bookings starting in 20 minutes missing a worker
         $schedule->command('notify:unassigned-services')->everyMinute();
+
+        // Every minute: alert customers about bookings starting in 20 minutes
+        $schedule->command('notify:customer-service-reminders')->everyMinute();
     }
 
     /**

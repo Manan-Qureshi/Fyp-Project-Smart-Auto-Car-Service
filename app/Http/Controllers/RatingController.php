@@ -16,7 +16,9 @@ class RatingController extends Controller
         abort_if($booking->rating()->exists(), 422, 'You have already rated this booking.');
 
         $request->validate([
-            'rating' => 'required|integer|between:1,5',
+            'rating'        => 'required|integer|between:1,5',
+            'feedback_type' => 'nullable|in:general,complaint',
+            'review'        => 'nullable|string|max:1000',
         ]);
 
         Rating::create([
@@ -24,6 +26,8 @@ class RatingController extends Controller
             'user_id'             => Auth::id(),
             'service_provider_id' => $booking->service_provider_id,
             'rating'              => $request->rating,
+            'review'              => $request->review,
+            'feedback_type'       => $request->feedback_type ?? 'general',
         ]);
 
         return back()->with('success', 'Thank you for your rating!');
