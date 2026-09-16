@@ -39,15 +39,6 @@
             </div>
         </div>
 
-        {{-- Quick Links --}}
-        @if(Route::has('admin.services.index'))
-            <div class="d-flex gap-2 mb-4 flex-wrap">
-                <a href="{{ route('admin.services.index') }}" class="btn btn-outline-primary rounded-pill">
-                    <i class="fas fa-concierge-bell me-1"></i> Services
-                </a>
-            </div>
-        @endif
-
         {{-- Bookings Filter + Table --}}
         <div class="glass-card p-4 rounded-4 shadow">
             <h5 class="fw-bold mb-3">
