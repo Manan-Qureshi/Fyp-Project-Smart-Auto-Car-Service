@@ -51,7 +51,7 @@ class ServiceController extends Controller
 
         if ($request->hasFile('image')) {
             try {
-                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                if (function_exists('cloudinary') && (config('cloudinary.cloud_url') || env('CLOUDINARY_URL'))) {
                     $uploaded = cloudinary()->upload($request->file('image')->getRealPath(), [
                         'folder' => 'services',
                     ]);
@@ -127,7 +127,7 @@ class ServiceController extends Controller
 
         if ($request->hasFile('image')) {
             try {
-                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                if (function_exists('cloudinary') && (config('cloudinary.cloud_url') || env('CLOUDINARY_URL'))) {
                     $uploaded = cloudinary()->upload($request->file('image')->getRealPath(), [
                         'folder' => 'services',
                     ]);

@@ -59,7 +59,7 @@ class AdminController extends Controller
 
         if ($request->hasFile('logo')) {
             try {
-                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                if (function_exists('cloudinary') && (config('cloudinary.cloud_url') || env('CLOUDINARY_URL'))) {
                     $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
                         'folder' => 'providers',
                     ]);
@@ -109,7 +109,7 @@ class AdminController extends Controller
 
         if ($request->hasFile('logo')) {
             try {
-                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                if (function_exists('cloudinary') && (config('cloudinary.cloud_url') || env('CLOUDINARY_URL'))) {
                     $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
                         'folder' => 'providers',
                     ]);
