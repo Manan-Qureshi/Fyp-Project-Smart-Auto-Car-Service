@@ -68,6 +68,7 @@ class AdminController extends Controller
                     $data['logo'] = $request->file('logo')->store('logos', 'public');
                 }
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Cloudinary logo upload failed: ' . $e->getMessage());
                 $data['logo'] = $request->file('logo')->store('logos', 'public');
             }
         }
@@ -118,6 +119,7 @@ class AdminController extends Controller
                     $data['logo'] = $request->file('logo')->store('logos', 'public');
                 }
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Cloudinary logo update failed: ' . $e->getMessage());
                 $data['logo'] = $request->file('logo')->store('logos', 'public');
             }
         }

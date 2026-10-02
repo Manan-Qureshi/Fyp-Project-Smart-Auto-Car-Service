@@ -60,6 +60,7 @@ class ServiceController extends Controller
                     $validated['image'] = $request->file('image')->store('services', 'public');
                 }
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Cloudinary service image upload failed: ' . $e->getMessage());
                 $validated['image'] = $request->file('image')->store('services', 'public');
             }
         }
@@ -139,6 +140,7 @@ class ServiceController extends Controller
                     $validated['image'] = $request->file('image')->store('services', 'public');
                 }
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Cloudinary service image update failed: ' . $e->getMessage());
                 $validated['image'] = $request->file('image')->store('services', 'public');
             }
         }
