@@ -1,6 +1,10 @@
 <?php
 
 $cloudUrl = env('CLOUDINARY_URL');
+if ($cloudUrl && (str_contains($cloudUrl, '<your_api_key>') || str_contains($cloudUrl, 'your_api_secret'))) {
+    $cloudUrl = null;
+}
+
 if (!$cloudUrl && env('CLOUDINARY_CLOUD_NAME') && env('CLOUDINARY_API_KEY') && env('CLOUDINARY_API_SECRET')) {
     $cloudUrl = 'cloudinary://' . env('CLOUDINARY_API_KEY') . ':' . env('CLOUDINARY_API_SECRET') . '@' . env('CLOUDINARY_CLOUD_NAME');
 }
