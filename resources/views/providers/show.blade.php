@@ -6,7 +6,7 @@
         <div class="glass-card p-4 rounded-4 mb-4 d-flex align-items-center gap-4 flex-wrap">
             <div class="flex-shrink-0">
                 @if($provider->logo)
-                    <img src="{{ asset('storage/' . $provider->logo) }}" class="rounded-circle border border-3 border-primary"
+                    <img src="{{ $provider->logo }}" class="rounded-circle border border-3 border-primary"
                         width="90" height="90" style="object-fit:cover">
                 @else
                     <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"

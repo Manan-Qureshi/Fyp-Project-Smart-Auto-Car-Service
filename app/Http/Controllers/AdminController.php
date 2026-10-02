@@ -58,7 +58,10 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('providers', 'public');
+            $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
+                'folder' => 'providers',
+            ]);
+            $data['logo'] = $uploaded->getSecurePath();
         }
 
         ServiceProvider::create([
@@ -97,7 +100,10 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('providers', 'public');
+            $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
+                'folder' => 'providers',
+            ]);
+            $data['logo'] = $uploaded->getSecurePath();
         }
 
         $provider->update(array_merge($data, [
