@@ -61,7 +61,7 @@
                                     <div class="glass-card h-100 text-center hover-up transition-all border-0 shadow-sm bg-white overflow-hidden d-flex flex-column">
                                         @if($service->image)
                                             <div style="height: 180px; width: 100%; overflow: hidden;">
-                                                <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                                                <img src="{{ \Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://']) ? $service->image : asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
                                             </div>
                                             <div class="p-4 flex-grow-1 d-flex flex-column">
                                         @else

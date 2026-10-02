@@ -56,7 +56,7 @@
                             <label class="form-label text-dark">Service Image</label>
                             @if($service->image)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-thumbnail" style="max-height: 100px;">
+                                    <img src="{{ \Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://']) ? $service->image : asset('storage/' . $service->image) }}" alt="{{ $service->name }}" class="img-thumbnail" style="max-height: 100px;">
                                 </div>
                             @endif
                             <input type="file" name="image" class="form-control" accept="image/*">

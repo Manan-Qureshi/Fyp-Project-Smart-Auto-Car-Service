@@ -50,7 +50,18 @@ class ServiceController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            try {
+                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                    $uploaded = cloudinary()->upload($request->file('image')->getRealPath(), [
+                        'folder' => 'services',
+                    ]);
+                    $validated['image'] = $uploaded->getSecurePath();
+                } else {
+                    $validated['image'] = $request->file('image')->store('services', 'public');
+                }
+            } catch (\Throwable $e) {
+                $validated['image'] = $request->file('image')->store('services', 'public');
+            }
         }
 
         try {
@@ -115,10 +126,21 @@ class ServiceController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            if ($service->image) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($service->image);
+            try {
+                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                    $uploaded = cloudinary()->upload($request->file('image')->getRealPath(), [
+                        'folder' => 'services',
+                    ]);
+                    $validated['image'] = $uploaded->getSecurePath();
+                } else {
+                    if ($service->image && !\Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://'])) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($service->image);
+                    }
+                    $validated['image'] = $request->file('image')->store('services', 'public');
+                }
+            } catch (\Throwable $e) {
+                $validated['image'] = $request->file('image')->store('services', 'public');
             }
-            $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
         $validated['type'] = 'standard';

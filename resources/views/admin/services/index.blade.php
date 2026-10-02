@@ -187,7 +187,7 @@
                     <label class="form-label fw-semibold">Service Image</label>
                     <input type="file" name="image" class="form-control rounded-3" accept="image/*">
                     @if(isset($editService) && $editService->image)
-                        <div class="mt-2"><img src="{{ asset('storage/'.$editService->image) }}" class="rounded-2" height="60"></div>
+                        <div class="mt-2"><img src="{{ \Illuminate\Support\Str::startsWith($editService->image, ['http://', 'https://']) ? $editService->image : asset('storage/'.$editService->image) }}" class="rounded-2" height="60"></div>
                     @endif
                 </div>
 
@@ -251,7 +251,7 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     @if($service->image)
-                                        <img src="{{ asset('storage/'.$service->image) }}" class="rounded-2" style="width: 45px; height: 45px; object-fit: cover;" alt="{{ $service->name }}">
+                                        <img src="{{ \Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://']) ? $service->image : asset('storage/'.$service->image) }}" class="rounded-2" style="width: 45px; height: 45px; object-fit: cover;" alt="{{ $service->name }}">
                                     @else
                                         <div class="rounded-2 bg-light d-flex align-items-center justify-content-center text-muted border" style="width: 45px; height: 45px;">
                                             <i class="fas fa-concierge-bell"></i>

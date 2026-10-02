@@ -82,7 +82,7 @@
                                 <div class="col-md-6 col-lg-4">
                                     <div class="card border-0 shadow-sm rounded-4 h-100">
                                         @if($service->image)
-                                            <img src="{{ asset('storage/' . $service->image) }}" class="card-img-top rounded-top-4"
+                                            <img src="{{ \Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://']) ? $service->image : asset('storage/' . $service->image) }}" class="card-img-top rounded-top-4"
                                                 style="height:140px;object-fit:cover">
                                         @endif
                                         <div class="card-body">

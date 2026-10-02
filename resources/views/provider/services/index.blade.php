@@ -60,7 +60,7 @@
                     <td class="ps-3">
                         <div class="d-flex align-items-center gap-3">
                             @if($service->image)
-                                <img src="{{ asset('storage/'.$service->image) }}" class="rounded-3 border" style="width: 45px; height: 45px; object-fit: cover;">
+                                <img src="{{ \Illuminate\Support\Str::startsWith($service->image, ['http://', 'https://']) ? $service->image : asset('storage/'.$service->image) }}" class="rounded-3 border" style="width: 45px; height: 45px; object-fit: cover;">
                             @else
                                 <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width: 45px; height: 45px;">
                                     <i class="fas fa-concierge-bell"></i>
