@@ -29,7 +29,7 @@
                     @endif
                     <div class="sacs-card__header {{ $isNearest ? 'sacs-card__header--nearest' : '' }}">
                         @if($provider->logo)
-                            <img src="{{ $provider->logo }}" height="70"
+                            <img src="{{ \Illuminate\Support\Str::startsWith($provider->logo, ['http://', 'https://']) ? $provider->logo : asset('storage/' . $provider->logo) }}" height="70"
                                 class="rounded-circle bg-white p-1 shadow-sm">
                         @else
                             <div class="sacs-card__icon-wrap {{ $isNearest ? 'sacs-card__icon-wrap--nearest' : '' }}">

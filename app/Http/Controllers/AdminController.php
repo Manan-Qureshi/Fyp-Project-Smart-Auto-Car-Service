@@ -58,10 +58,18 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
-                'folder' => 'providers',
-            ]);
-            $data['logo'] = $uploaded->getSecurePath();
+            try {
+                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                    $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
+                        'folder' => 'providers',
+                    ]);
+                    $data['logo'] = $uploaded->getSecurePath();
+                } else {
+                    $data['logo'] = $request->file('logo')->store('logos', 'public');
+                }
+            } catch (\Throwable $e) {
+                $data['logo'] = $request->file('logo')->store('logos', 'public');
+            }
         }
 
         ServiceProvider::create([
@@ -100,10 +108,18 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
-                'folder' => 'providers',
-            ]);
-            $data['logo'] = $uploaded->getSecurePath();
+            try {
+                if (function_exists('cloudinary') && env('CLOUDINARY_URL')) {
+                    $uploaded = cloudinary()->upload($request->file('logo')->getRealPath(), [
+                        'folder' => 'providers',
+                    ]);
+                    $data['logo'] = $uploaded->getSecurePath();
+                } else {
+                    $data['logo'] = $request->file('logo')->store('logos', 'public');
+                }
+            } catch (\Throwable $e) {
+                $data['logo'] = $request->file('logo')->store('logos', 'public');
+            }
         }
 
         $provider->update(array_merge($data, [
