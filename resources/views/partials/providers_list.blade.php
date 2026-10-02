@@ -27,10 +27,10 @@
                             <i class="fas fa-trophy me-1"></i> Nearest to You
                         </div>
                     @endif
-                    <div class="sacs-card__header {{ $isNearest ? 'sacs-card__header--nearest' : '' }}">
+                    <div class="sacs-card__header p-0 overflow-hidden {{ $isNearest ? 'sacs-card__header--nearest' : '' }}" style="height: 130px; border-top-left-radius: 14px; border-top-right-radius: 14px;">
                         @if($provider->logo)
-                            <img src="{{ \Illuminate\Support\Str::startsWith($provider->logo, ['http://', 'https://']) ? $provider->logo : asset('storage/' . $provider->logo) }}" height="70"
-                                class="rounded-circle bg-white p-1 shadow-sm">
+                            <img src="{{ \Illuminate\Support\Str::startsWith($provider->logo, ['http://', 'https://']) ? $provider->logo : asset('storage/' . $provider->logo) }}"
+                                class="w-100 h-100 bg-white" style="object-fit: cover;">
                         @else
                             <div class="sacs-card__icon-wrap {{ $isNearest ? 'sacs-card__icon-wrap--nearest' : '' }}">
                                 <i class="fas fa-store-alt fa-2x"
