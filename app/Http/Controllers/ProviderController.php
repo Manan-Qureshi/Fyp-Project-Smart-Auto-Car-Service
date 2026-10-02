@@ -56,7 +56,7 @@ class ProviderController extends Controller
                 'business_name' => $p->business_name,
                 'address'       => $p->address,
                 'distance_km'   => $p->distance ? round($p->distance, 1) : null,
-                'logo'          => $p->logo ? asset('storage/' . $p->logo) : null,
+                'logo'          => $p->logo ? (\Illuminate\Support\Str::startsWith($p->logo, ['http://', 'https://']) ? $p->logo : asset('storage/' . $p->logo)) : null,
                 'avg_rating'    => round($p->ratings()->avg('rating') ?? 0, 1),
             ];
         }));
