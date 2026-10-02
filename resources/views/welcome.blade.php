@@ -26,7 +26,7 @@
                 <div class="sacs-hero__blob"></div>
 
                 {{-- Car image --}}
-                <img src="{{ asset('images/car_exploded.png') }}"
+                <img src="{{ asset('images/car_exploded.webp') }}"
                     onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700&q=80'; this.style.objectFit='cover';"
                     alt="Car" class="sacs-hero__car-img">
 
