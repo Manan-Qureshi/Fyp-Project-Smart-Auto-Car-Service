@@ -86,6 +86,13 @@ class ServiceStatusUpdated extends Notification
                 'icon'       => 'fa-undo',
                 'color'      => 'warning',
             ],
+            'payout_received' => [
+                'title'      => 'Payout Received',
+                'message'    => "Payout of PKR " . number_format($this->booking->commission?->provider_earning ?? 0) . " has been transferred to your connected account for booking #" . $this->booking->id . ".",
+                'booking_id' => $this->booking->id,
+                'icon'       => 'fa-wallet',
+                'color'      => 'success',
+            ],
             default => [
                 'title'      => 'Booking Update',
                 'message'    => "Your booking #" . $this->booking->id . " has been updated.",

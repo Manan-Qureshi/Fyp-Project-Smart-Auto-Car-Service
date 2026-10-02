@@ -187,6 +187,10 @@ class PaymentController extends Controller
                 'stripe_transfer_id' => $transfer->id,
             ]);
 
+            if ($provider->owner) {
+                $provider->owner->notify(new \App\Notifications\ServiceStatusUpdated($booking, 'payout_received'));
+            }
+
             return $transfer;
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Stripe Connect Transfer FAILED for Booking {$booking->id}: " . $e->getMessage());
